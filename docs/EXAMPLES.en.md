@@ -6,6 +6,8 @@
 
 [Full normal-speed comparison](media/comparison-original-corrected.mp4) · [Download sample media](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
+[See the hold example](HOLD_EXAMPLE.en.md)
+
 In the comparison, the corrected view on the right shows an **orange border only on replaced frames**, alongside the frame number and cumulative replacement count (**11 total**). The downloadable `jump-corrected.mp4` has no overlays.
 
 ## Trim first, then analyze

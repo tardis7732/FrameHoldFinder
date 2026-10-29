@@ -1,0 +1,366 @@
+{
+  "title_en": "Hold and correction-aware jump example",
+  "title_ko": "홀드와 보정 반영 점프 예시",
+  "sample": {
+    "frames": 66,
+    "fps": 24,
+    "duration_seconds": 2.75,
+    "width": 1920,
+    "height": 1080,
+    "original_frame_range": [
+      1,
+      66
+    ],
+    "original_frame_offset": 0,
+    "origin": "Contiguous source frames 1–66 from an existing user-owned Higgsfield video. The excerpt was encoded to HEVC Main 10, yuv420p10le, CRF 12 before analysis; available AAC audio was packet-copied from the start with a 2.75-second output limit. No frames were fabricated to create the defect.",
+    "audio": "AAC audio is retained. AAC packet boundaries can make container/audio duration slightly longer than the exact 2.75-second video duration."
+  },
+  "settings": {
+    "analysis_width": 960,
+    "speed_threshold_percent": 37.1,
+    "support_percent": 30,
+    "min_points": 20,
+    "min_move_px": 4.8,
+    "hold_quiet_px": 0.5,
+    "hold_detection": true,
+    "jump_detection": true,
+    "render_quality": "HIGH",
+    "format_mode": "source"
+  },
+  "before": {
+    "holds": 2,
+    "jumps": 2,
+    "correction_aware_jumps": 2
+  },
+  "after": {
+    "holds": 0,
+    "jumps": 0,
+    "correction_aware_jumps": 0
+  },
+  "before_rows": [
+    {
+      "kind": "hold",
+      "key": "hold:14:15",
+      "start": 14,
+      "end": 15,
+      "right": null,
+      "score_percent": 0.0,
+      "targets": [
+        15
+      ],
+      "included": true,
+      "repairable": true,
+      "references": [
+        14,
+        16
+      ],
+      "uses_prediction": true,
+      "predicted_peak": false
+    },
+    {
+      "kind": "jump",
+      "key": "jump:16:17",
+      "start": 16,
+      "end": 16,
+      "right": 17,
+      "score_percent": 89.257,
+      "targets": [
+        17
+      ],
+      "included": true,
+      "repairable": true,
+      "references": [
+        16,
+        18
+      ],
+      "uses_prediction": true,
+      "predicted_peak": true
+    },
+    {
+      "kind": "hold",
+      "key": "hold:62:63",
+      "start": 62,
+      "end": 63,
+      "right": null,
+      "score_percent": 0.0,
+      "targets": [
+        63
+      ],
+      "included": true,
+      "repairable": true,
+      "references": [
+        62,
+        64
+      ],
+      "uses_prediction": true,
+      "predicted_peak": false
+    },
+    {
+      "kind": "jump",
+      "key": "jump:64:65",
+      "start": 64,
+      "end": 64,
+      "right": 65,
+      "score_percent": 104.83,
+      "targets": [
+        65
+      ],
+      "included": true,
+      "repairable": true,
+      "references": [
+        64,
+        66
+      ],
+      "uses_prediction": true,
+      "predicted_peak": true
+    }
+  ],
+  "after_rows": [],
+  "selected_interval_scores": [
+    {
+      "interval": [
+        16,
+        17
+      ],
+      "before_percent": 89.257,
+      "after_percent": 0.0,
+      "after_detected": false,
+      "uses_prediction": true
+    },
+    {
+      "interval": [
+        64,
+        65
+      ],
+      "before_percent": 104.83,
+      "after_percent": 0.254,
+      "after_detected": false,
+      "uses_prediction": true
+    }
+  ],
+  "generated": 4,
+  "replacements": [
+    {
+      "start": 15,
+      "end": 15,
+      "anchors": [
+        14,
+        16
+      ],
+      "count": 1
+    },
+    {
+      "start": 17,
+      "end": 17,
+      "anchors": [
+        16,
+        18
+      ],
+      "count": 1
+    },
+    {
+      "start": 63,
+      "end": 63,
+      "anchors": [
+        62,
+        64
+      ],
+      "count": 1
+    },
+    {
+      "start": 65,
+      "end": 65,
+      "anchors": [
+        64,
+        66
+      ],
+      "count": 1
+    }
+  ],
+  "source_frames": 66,
+  "output_frames": 66,
+  "delta": 0,
+  "format": {
+    "container": "mp4",
+    "codec": "hevc",
+    "profile": "Main 10",
+    "pixel_format": "yuv420p10le",
+    "width": 1920,
+    "height": 1080,
+    "fps_fraction": "24",
+    "audio_streams": 1
+  },
+  "precision": "RGB10A2 (10-bit RGB)",
+  "full_source_early_analysis": {
+    "frames": 721,
+    "candidates_starting_in_first_66": [
+      {
+        "kind": "hold",
+        "key": "hold:14:15",
+        "start": 14,
+        "end": 15,
+        "right": null,
+        "score_percent": 0.0,
+        "targets": [
+          15
+        ],
+        "included": true,
+        "repairable": true,
+        "references": [
+          14,
+          16
+        ],
+        "uses_prediction": true,
+        "predicted_peak": false
+      },
+      {
+        "kind": "jump",
+        "key": "jump:16:17",
+        "start": 16,
+        "end": 16,
+        "right": 17,
+        "score_percent": 90.142,
+        "targets": [
+          17
+        ],
+        "included": true,
+        "repairable": true,
+        "references": [
+          16,
+          18
+        ],
+        "uses_prediction": true,
+        "predicted_peak": true
+      },
+      {
+        "kind": "hold",
+        "key": "hold:62:63",
+        "start": 62,
+        "end": 63,
+        "right": null,
+        "score_percent": 0.0,
+        "targets": [
+          63
+        ],
+        "included": true,
+        "repairable": true,
+        "references": [
+          62,
+          64
+        ],
+        "uses_prediction": true,
+        "predicted_peak": false
+      },
+      {
+        "kind": "jump",
+        "key": "jump:64:65",
+        "start": 64,
+        "end": 64,
+        "right": 65,
+        "score_percent": 103.658,
+        "targets": [
+          65
+        ],
+        "included": true,
+        "repairable": true,
+        "references": [
+          64,
+          66
+        ],
+        "uses_prediction": true,
+        "predicted_peak": true
+      }
+    ],
+    "cropped_candidate_keys": [
+      "hold:14:15",
+      "jump:16:17",
+      "hold:62:63",
+      "jump:64:65"
+    ],
+    "full_candidate_keys": [
+      "hold:14:15",
+      "jump:16:17",
+      "hold:62:63",
+      "jump:64:65"
+    ],
+    "matching_candidate_keys": true
+  },
+  "validation": {
+    "source": {
+      "container": "mp4",
+      "codec": "hevc",
+      "profile": "Main 10",
+      "pixel_format": "yuv420p10le",
+      "width": 1920,
+      "height": 1080,
+      "fps_fraction": "24",
+      "audio_streams": 1,
+      "frames": 66,
+      "video_duration_seconds": 2.75,
+      "container_duration_seconds": 2.752,
+      "color_range": "tv",
+      "color_space": "bt709",
+      "color_transfer": "bt709",
+      "color_primaries": "bt709",
+      "audio": {
+        "codec": "aac",
+        "sample_rate": 32000,
+        "channels": 2,
+        "duration_seconds": 2.752,
+        "start_seconds": 0.0
+      }
+    },
+    "output": {
+      "container": "mp4",
+      "codec": "hevc",
+      "profile": "Main 10",
+      "pixel_format": "yuv420p10le",
+      "width": 1920,
+      "height": 1080,
+      "fps_fraction": "24",
+      "audio_streams": 1,
+      "frames": 66,
+      "video_duration_seconds": 2.75,
+      "container_duration_seconds": 2.752,
+      "color_range": "tv",
+      "color_space": "bt709",
+      "color_transfer": "bt709",
+      "color_primaries": "bt709",
+      "audio": {
+        "codec": "aac",
+        "sample_rate": 32000,
+        "channels": 2,
+        "duration_seconds": 2.752,
+        "start_seconds": 0.0
+      }
+    },
+    "original_sha256": "023cb38a213a9efb8519ff93226833afd7ce518d1e2d639d73e8c6f11f51e6ef",
+    "corrected_sha256": "fdbdd42c6e522355019704d7d4a76d5edd94a8de45bec0b6c903de529f18b20f",
+    "audio_elementary_stream_identical": true,
+    "source_audio_payload": {
+      "sha256": "f7892dd58d6f972d37cc1d5b2e6db468f67c1947f8a0a1342a090b05e5673276",
+      "bytes": 94548
+    },
+    "corrected_audio_payload": {
+      "sha256": "f7892dd58d6f972d37cc1d5b2e6db468f67c1947f8a0a1342a090b05e5673276",
+      "bytes": 94548
+    }
+  },
+  "explanation_en": "The first 66 source frames are analyzed with hold and jump detection enabled at +37.1%. Correction-aware jump candidates reflect predicted motion after hold replacement. Existing frames are regenerated between original references; the 66-frame, 24-fps timeline and AAC payload remain unchanged. Detection thresholds and optical flow do not prove recovery of missing original frames.",
+  "explanation_ko": "원본 첫 66프레임에 홀드·점프 감지를 함께 켜고 +37.1%로 분석했습니다. 보정 반영 점프는 홀드 보간 뒤의 움직임을 계산에 반영한 후보입니다. 원본 참조 사이의 기존 프레임을 생성·교체하며 66프레임·24fps 타임라인과 AAC 오디오 페이로드를 유지합니다. 검출 기준과 모션 추적만으로 누락된 원본 프레임의 복구를 확정하지는 않습니다.",
+  "comparison_overlay": {
+    "side": "corrected",
+    "border_color": "#f59e0b",
+    "highlighted_frames": [
+      15,
+      17,
+      63,
+      65
+    ],
+    "frame_numbers": "1-based source timeline, 1–66 excerpt",
+    "counter": "cumulative replacements / 4",
+    "clean_corrected_video_unmodified": true
+  },
+  "preview_en": "The silent comparison MP4 shows all 66 frames at normal speed; the looping silent GIF shows the same frames at 0.25x. Source and clean corrected files retain AAC audio.",
+  "preview_ko": "무음 비교 MP4는 66프레임을 정상 속도로, 반복 무음 GIF는 같은 구간을 0.25배속으로 보여줍니다. 원본 발췌와 표시 없는 보정본은 AAC 오디오를 유지합니다."
+}

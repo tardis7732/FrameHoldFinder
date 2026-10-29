@@ -21,6 +21,7 @@ Windows에서 133개 중 **131개 통과, 2개 생략**했습니다. 생략한 �
 | Full Higgsfield source,721frames,1920×1080,24fps | HEVC Main10/color tags/audio retained; decoded AAC hash matched / HEVC·색정보·오디오 유지, AAC 디코딩 해시 일치 |
 | CLI manual render,12frames,30000/1001fps | References3/6 replaced4/5; count/FPS/audio retained / 3·6 참조로4·5 교체, 프레임·FPS·오디오 유지 |
 | Cropped jump example,34frames,24fps | Cut original111–144 first; +37.1% detection,11 replacements,11→0 candidates,34frames retained / 원본111–144를 먼저 잘라 분석,11장 교체,후보11→0,34프레임 유지 |
+| Hold example,66frames,24fps | First1–66,hold2 + correction-aware jump2→0,frames15/17/63/65 replaced; HEVC Main10/BT.709/AAC payload retained / 첫66프레임,홀드2·보정반영점프2→0,4장 교체,형식·오디오 유지 |
 
 Short audio-bearing fixtures also retained their decoded audio hashes. Source files remained unchanged. These tests establish the supported export path, not universal format compatibility or perfect reconstruction.
 

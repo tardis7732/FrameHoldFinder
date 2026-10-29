@@ -76,6 +76,8 @@ Seedance footage from the author's Higgsfield account is **trimmed to frames 111
 
 The GIF above shows all 34 frames at **0.25x**. The application's default speed threshold remains **+5%**; only this example uses +37.1%. [Example notes and normal-speed comparison](docs/EXAMPLES.en.md) · [Download sample media](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
+**Hold example:** The **first 66 frames of a separate video** contain two holds and **two correction-aware jumps**, corrected together by replacing existing frames **15, 17, 63 and 65**. Reanalysis finds zero candidates of either type at the same settings, while **66 frames / 24fps and AAC audio** are retained. [Hold example and comparison](docs/HOLD_EXAMPLE.en.md)
+
 ## CLI
 
 ```powershell
