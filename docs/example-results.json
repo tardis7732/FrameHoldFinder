@@ -1,0 +1,657 @@
+{
+  "title_en": "Real Higgsfield motion example",
+  "title_ko": "힉스필드 실제 움직임 예시",
+  "sample": {
+    "frames": 144,
+    "fps": 24,
+    "duration_seconds": 6,
+    "width": 1920,
+    "height": 1080,
+    "origin": "Contiguous frames 265–408 of an existing user-owned Higgsfield video; no frame duplication, insertion, or timing changes were introduced to create the example.",
+    "audio": "No audio stream in this six-second example excerpt."
+  },
+  "settings": {
+    "analysis_width": 960,
+    "speed_threshold_percent": 5,
+    "support_percent": 30,
+    "min_points": 20,
+    "min_move_px": 4.8,
+    "hold_quiet_px": 0.5
+  },
+  "before": {
+    "holds": 0,
+    "jumps": 20
+  },
+  "after": {
+    "holds": 0,
+    "jumps": 0
+  },
+  "before_rows": [
+    {
+      "kind": "jump",
+      "key": "jump:28:29",
+      "start": 28,
+      "right": 29,
+      "score_percent": 38.846,
+      "targets": [
+        29
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:32:33",
+      "start": 32,
+      "right": 33,
+      "score_percent": 79.405,
+      "targets": [
+        33
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:36:37",
+      "start": 36,
+      "right": 37,
+      "score_percent": 58.098,
+      "targets": [
+        37
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:40:41",
+      "start": 40,
+      "right": 41,
+      "score_percent": 92.925,
+      "targets": [
+        41
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:44:45",
+      "start": 44,
+      "right": 45,
+      "score_percent": 62.055,
+      "targets": [
+        45
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:48:49",
+      "start": 48,
+      "right": 49,
+      "score_percent": 61.081,
+      "targets": [
+        49
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:52:53",
+      "start": 52,
+      "right": 53,
+      "score_percent": 85.447,
+      "targets": [
+        53
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:56:57",
+      "start": 56,
+      "right": 57,
+      "score_percent": 86.625,
+      "targets": [
+        57
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:112:113",
+      "start": 112,
+      "right": 113,
+      "score_percent": 194.297,
+      "targets": [
+        113
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:114:115",
+      "start": 114,
+      "right": 115,
+      "score_percent": 71.464,
+      "targets": [
+        115
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:116:117",
+      "start": 116,
+      "right": 117,
+      "score_percent": 63.535,
+      "targets": [
+        117
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:120:121",
+      "start": 120,
+      "right": 121,
+      "score_percent": 69.246,
+      "targets": [
+        121
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:122:123",
+      "start": 122,
+      "right": 123,
+      "score_percent": 78.318,
+      "targets": [
+        123
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:124:125",
+      "start": 124,
+      "right": 125,
+      "score_percent": 75.524,
+      "targets": [
+        125
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:128:129",
+      "start": 128,
+      "right": 129,
+      "score_percent": 66.896,
+      "targets": [
+        129
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:130:131",
+      "start": 130,
+      "right": 131,
+      "score_percent": 15.511,
+      "targets": [
+        131
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:132:133",
+      "start": 132,
+      "right": 133,
+      "score_percent": 60.143,
+      "targets": [
+        133
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:136:137",
+      "start": 136,
+      "right": 137,
+      "score_percent": 96.72,
+      "targets": [
+        137
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:138:139",
+      "start": 138,
+      "right": 139,
+      "score_percent": 80.507,
+      "targets": [
+        139
+      ],
+      "included": true,
+      "repairable": true
+    },
+    {
+      "kind": "jump",
+      "key": "jump:140:141",
+      "start": 140,
+      "right": 141,
+      "score_percent": 72.509,
+      "targets": [
+        141
+      ],
+      "included": true,
+      "repairable": true
+    }
+  ],
+  "after_rows": [],
+  "selected_interval_scores": [
+    {
+      "interval": [
+        28,
+        29
+      ],
+      "before_percent": 38.846,
+      "after_percent": 0.112,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        32,
+        33
+      ],
+      "before_percent": 79.405,
+      "after_percent": 0.86,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        36,
+        37
+      ],
+      "before_percent": 58.098,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        40,
+        41
+      ],
+      "before_percent": 92.925,
+      "after_percent": 1.403,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        44,
+        45
+      ],
+      "before_percent": 62.055,
+      "after_percent": 0.377,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        48,
+        49
+      ],
+      "before_percent": 61.081,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        52,
+        53
+      ],
+      "before_percent": 85.447,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        56,
+        57
+      ],
+      "before_percent": 86.625,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        112,
+        113
+      ],
+      "before_percent": 194.297,
+      "after_percent": 0.702,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        114,
+        115
+      ],
+      "before_percent": 71.464,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        116,
+        117
+      ],
+      "before_percent": 63.535,
+      "after_percent": 1.012,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        120,
+        121
+      ],
+      "before_percent": 69.246,
+      "after_percent": 0.664,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        122,
+        123
+      ],
+      "before_percent": 78.318,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        124,
+        125
+      ],
+      "before_percent": 75.524,
+      "after_percent": 0.502,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        128,
+        129
+      ],
+      "before_percent": 66.896,
+      "after_percent": 0.092,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        130,
+        131
+      ],
+      "before_percent": 15.511,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        132,
+        133
+      ],
+      "before_percent": 60.143,
+      "after_percent": 0.628,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        136,
+        137
+      ],
+      "before_percent": 96.72,
+      "after_percent": 1.206,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        138,
+        139
+      ],
+      "before_percent": 80.507,
+      "after_percent": 0.0,
+      "after_detected": false
+    },
+    {
+      "interval": [
+        140,
+        141
+      ],
+      "before_percent": 72.509,
+      "after_percent": 0.863,
+      "after_detected": false
+    }
+  ],
+  "generated": 20,
+  "replacements": [
+    {
+      "start": 29,
+      "end": 29,
+      "anchors": [
+        28,
+        30
+      ],
+      "count": 1
+    },
+    {
+      "start": 33,
+      "end": 33,
+      "anchors": [
+        32,
+        34
+      ],
+      "count": 1
+    },
+    {
+      "start": 37,
+      "end": 37,
+      "anchors": [
+        36,
+        38
+      ],
+      "count": 1
+    },
+    {
+      "start": 41,
+      "end": 41,
+      "anchors": [
+        40,
+        42
+      ],
+      "count": 1
+    },
+    {
+      "start": 45,
+      "end": 45,
+      "anchors": [
+        44,
+        46
+      ],
+      "count": 1
+    },
+    {
+      "start": 49,
+      "end": 49,
+      "anchors": [
+        48,
+        50
+      ],
+      "count": 1
+    },
+    {
+      "start": 53,
+      "end": 53,
+      "anchors": [
+        52,
+        54
+      ],
+      "count": 1
+    },
+    {
+      "start": 57,
+      "end": 57,
+      "anchors": [
+        56,
+        58
+      ],
+      "count": 1
+    },
+    {
+      "start": 113,
+      "end": 113,
+      "anchors": [
+        112,
+        114
+      ],
+      "count": 1
+    },
+    {
+      "start": 115,
+      "end": 115,
+      "anchors": [
+        114,
+        116
+      ],
+      "count": 1
+    },
+    {
+      "start": 117,
+      "end": 117,
+      "anchors": [
+        116,
+        118
+      ],
+      "count": 1
+    },
+    {
+      "start": 121,
+      "end": 121,
+      "anchors": [
+        120,
+        122
+      ],
+      "count": 1
+    },
+    {
+      "start": 123,
+      "end": 123,
+      "anchors": [
+        122,
+        124
+      ],
+      "count": 1
+    },
+    {
+      "start": 125,
+      "end": 125,
+      "anchors": [
+        124,
+        126
+      ],
+      "count": 1
+    },
+    {
+      "start": 129,
+      "end": 129,
+      "anchors": [
+        128,
+        130
+      ],
+      "count": 1
+    },
+    {
+      "start": 131,
+      "end": 131,
+      "anchors": [
+        130,
+        132
+      ],
+      "count": 1
+    },
+    {
+      "start": 133,
+      "end": 133,
+      "anchors": [
+        132,
+        134
+      ],
+      "count": 1
+    },
+    {
+      "start": 137,
+      "end": 137,
+      "anchors": [
+        136,
+        138
+      ],
+      "count": 1
+    },
+    {
+      "start": 139,
+      "end": 139,
+      "anchors": [
+        138,
+        140
+      ],
+      "count": 1
+    },
+    {
+      "start": 141,
+      "end": 141,
+      "anchors": [
+        140,
+        142
+      ],
+      "count": 1
+    }
+  ],
+  "source_frames": 144,
+  "output_frames": 144,
+  "delta": 0,
+  "format": {
+    "container": "mp4",
+    "codec": "h264",
+    "profile": "High",
+    "pixel_format": "yuv420p",
+    "width": 1920,
+    "height": 1080,
+    "fps_fraction": "24",
+    "audio_streams": 0
+  },
+  "precision": "RGB10A2 (10-bit RGB)",
+  "explanation_en": "Jump candidates are isolated motion-speed peaks, not proof of missing frames. The automatic selection replaces existing frames between original references; it does not insert frames. This silent excerpt remains 144 frames at 24 fps (6 seconds). Re-analysis can leave or introduce candidates; optical-flow statistics alone do not establish visual correctness. Audio copying was separately verified on the full source video, which has AAC audio.",
+  "explanation_ko": "점프 후보는 주변보다 빨라진 움직임으로, 프레임 누락이 확정됐다는 뜻은 아닙니다. 자동 선택된 기존 프레임을 앞뒤 원본 참조 사이의 이미지로 교체하며 프레임을 추가하지 않습니다. 이 무음 예시는 보정 전후 모두 144프레임·24fps·6초입니다. 재분석에서 후보가 남거나 새로 생길 수 있으며, 모션벡터 수치만으로 시각적 보정의 정확성을 확정할 수 없습니다. 오디오 복사는 AAC 오디오가 있는 전체 원본 영상으로 별도 검증했습니다.",
+  "visual_review_en": "Representative generated frames 41, 113 and 137 were inspected side by side. No obvious large structural distortion was visible at the preview scale. This is a limited still-frame check, not a claim of artifact-free interpolation or verified lost-frame recovery.",
+  "visual_review_ko": "생성된 41·113·137프레임을 좌우 비교로 확인했습니다. 미리보기 크기에서 큰 형태 왜곡은 뚜렷하게 보이지 않았습니다. 일부 정지 프레임을 확인한 결과이며, 보간 아티팩트가 전혀 없거나 실제 누락 프레임을 복원했다는 의미는 아닙니다.",
+  "preview_en": "Side-by-side MP4 plays at normal speed. GIF is explicitly labeled 0.5x and is a downscaled, silent review preview; it is not the original-format export.",
+  "preview_ko": "좌우 비교 MP4는 정상 속도입니다. GIF는 0.5배속이라고 표시한 축소·무음 검토용 미리보기이며, 원본 형식 저장본과는 별개입니다."
+}
