@@ -6,6 +6,8 @@
 
 [전체 정상 속도 비교 영상](media/comparison-original-corrected.mp4) · [예시 파일 다운로드](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
+비교 영상 오른쪽 보정본의 **주황 테두리는 교체된 프레임에서만 켜지며**, 프레임 번호와 누적 교체 수(**총 11장**)를 표시합니다. 다운로드용 `jump-corrected.mp4`에는 이 표시가 없습니다.
+
 ## 먼저 자르고, 다시 분석
 
 작성자의 Higgsfield 계정에서 내려받은 Seedance 영상입니다. 기존 144프레임 예시의 **111–144프레임을 먼저 잘라** `jump-original.mp4`를 만들고, 이 **34프레임 파일을 새로 분석**했습니다. 전체 영상의 분석 결과를 잘라 사용한 것이 아닙니다.

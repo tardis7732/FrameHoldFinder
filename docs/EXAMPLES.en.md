@@ -6,6 +6,8 @@
 
 [Full normal-speed comparison](media/comparison-original-corrected.mp4) · [Download sample media](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
+In the comparison, the corrected view on the right shows an **orange border only on replaced frames**, alongside the frame number and cumulative replacement count (**11 total**). The downloadable `jump-corrected.mp4` has no overlays.
+
 ## Trim first, then analyze
 
 The footage was generated with Seedance and downloaded from the author's Higgsfield account. **Frames 111–144 of the previous 144-frame example are extracted first** as `jump-original.mp4`, then this **34-frame file is analyzed afresh**. The analysis is not a cropped view of the full video's results.

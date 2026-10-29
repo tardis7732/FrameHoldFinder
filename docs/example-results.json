@@ -506,5 +506,25 @@
   "explanation_en": "This clip was cut before detection. All candidates qualifying at +37.1% were rendered at HIGH quality. Existing frames are regenerated between original references without changing frame count, frame rate or duration. A motion-speed peak is not proof of missing footage. The clip is silent, so it does not demonstrate audio copying.",
   "explanation_ko": "영상을 먼저 자른 뒤 새 타임라인에서 분석했습니다. +37.1% 기준을 통과한 후보를 HIGH 품질로 보정했습니다. 앞뒤 원본 참조로 기존 프레임을 생성·교체하며 프레임 수·FPS·길이는 유지합니다. 모션 속도 피크가 실제 프레임 누락을 확정하지는 않습니다. 무음 영상이므로 오디오 복사 검증을 뜻하지 않습니다.",
   "preview_en": "The side-by-side MP4 plays the entire 34-frame cut at normal speed. The looping GIF shows the same cut at 0.25x for review; it is labeled as slow motion and is not the source-format render.",
-  "preview_ko": "좌우 비교 MP4는 34프레임 컷 전체를 정상 속도로 재생합니다. 반복 GIF는 같은 구간을 0.25배속으로 보여주는 검토용이며, 원본 형식 렌더와는 별개입니다."
+  "preview_ko": "좌우 비교 MP4는 34프레임 컷 전체를 정상 속도로 재생합니다. 반복 GIF는 같은 구간을 0.25배속으로 보여주는 검토용이며, 원본 형식 렌더와는 별개입니다.",
+  "comparison_overlay": {
+    "side": "corrected",
+    "border_color": "#f59e0b",
+    "highlighted_frames": [
+      3,
+      5,
+      7,
+      11,
+      13,
+      15,
+      19,
+      23,
+      27,
+      29,
+      31
+    ],
+    "frame_numbers": "1-based cropped timeline",
+    "counter": "cumulative replacements / 11",
+    "clean_corrected_video_unmodified": true
+  }
 }
