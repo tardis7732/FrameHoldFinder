@@ -4,7 +4,7 @@
 
 **A Windows desktop tool for finding motion holds and jump candidates in a single video, without a separate reference original.** Review sparse optical-flow analysis, then replace selected frames with NVIDIA Video Effects SDK interpolation. No Nuke installation is required.
 
-[![Original versus corrected — 0.5x playback](docs/images/comparison-half-speed.gif)](docs/EXAMPLES.en.md)
+[![Jump comparison — 34 frames at 0.25x](docs/images/jump-comparison-quarter-speed.gif)](docs/EXAMPLES.en.md)
 
 ![English interface](docs/images/ui-en.png)
 
@@ -72,7 +72,9 @@ All criteria are adjustable in the UI and CLI. Intentional pauses and accelerati
 
 ![Zoomed motion graph](docs/images/ui-en-zoom.png)
 
-The example uses an actual segment downloaded from the author's Higgsfield account, generated with Seedance. No synthetic frame defects were added. Default-setting jump candidates went from **20 to 0**, while **144 frames / 24fps / 6 seconds** remained unchanged. See [example notes](docs/EXAMPLES.en.md) for provenance and analysis settings; sample media is available in the [release](https://github.com/tardis7732/FrameHoldFinder/releases/latest).
+Seedance footage from the author's Higgsfield account is **trimmed to frames 111–144 of the previous example first**, then analyzed as a new **1–34 timeline**. At a **+37.1%** speed threshold, 11 detected jumps are corrected; reanalysis with the same settings changes the candidate count from **11 to 0**. No synthetic frame defects were added, and **34 frames / 24fps / about 1.417 seconds** remain unchanged.
+
+The GIF above shows all 34 frames at **0.25x**. The application's default speed threshold remains **+5%**; only this example uses +37.1%. [Example notes and normal-speed comparison](docs/EXAMPLES.en.md) · [Download sample media](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
 ## CLI
 

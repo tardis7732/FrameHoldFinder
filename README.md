@@ -4,7 +4,7 @@
 
 **원본 비교 영상 없이, 입력 영상 하나에서 홀드와 모션 점프 후보를 찾고 보정하는 Windows 데스크톱 도구입니다.** Nuke 없이 실행하며, OpenCV 모션 추적으로 분석하고 NVIDIA Video Effects SDK로 선택한 프레임을 생성합니다.
 
-[![원본과 보정 비교 — 0.5배속](docs/images/comparison-half-speed.gif)](docs/EXAMPLES.md)
+[![점프 구간 비교 — 34프레임, 0.25배속](docs/images/jump-comparison-quarter-speed.gif)](docs/EXAMPLES.md)
 
 ![한국어 인터페이스](docs/images/ui-ko.png)
 
@@ -72,7 +72,9 @@
 
 ![영문 인터페이스와 확대 그래프](docs/images/ui-en-zoom.png)
 
-Higgsfield 계정에서 내려받은 Seedance 생성 영상의 실제 구간을 사용했습니다. 프레임 결함을 인위적으로 넣지 않았습니다. 기본 설정으로 점프 후보가 **20 → 0**, 길이는 **144프레임·24fps·6초**로 유지됐습니다. 예시 파일과 분석 조건은 [예시 설명](docs/EXAMPLES.md)에, 다운로드는 [릴리스](https://github.com/tardis7732/FrameHoldFinder/releases/latest)에 있습니다.
+Higgsfield 계정의 Seedance 영상에서 기존 예시의 **111–144프레임을 먼저 잘라**, 새 **1–34프레임** 구간을 분석했습니다. 속도 기준 **+37.1%**에서 검출된 점프 11곳을 보정했고, 같은 기준으로 재분석한 후보는 **11 → 0**입니다. 프레임 결함을 인위적으로 넣지 않았으며 **34프레임·24fps·약 1.417초**를 유지합니다.
+
+위 GIF는 전체 34프레임을 **0.25배속**으로 보여줍니다. 프로그램 기본 속도 기준은 **+5%**로 유지되며, 예시 분석에만 +37.1%를 사용했습니다. [예시 설명과 정상 속도 비교](docs/EXAMPLES.md) · [예시 다운로드](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
 ## CLI
 

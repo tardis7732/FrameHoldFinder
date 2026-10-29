@@ -6,9 +6,9 @@ Public release: **1.0**, 2026-10-29. Local development iteration numbers are not
 
 ## Automated tests / 자동 테스트
 
-131 tests: **129 passed, 2 skipped** on Windows. The skipped cases require symbolic-link privileges unavailable in the test environment. Coverage includes motion criteria, manual ranges and reference protection, exclusion handling, graph viewport navigation, language translations, CLI validation, safe report paths and source-format planning.
+133 tests: **131 passed, 2 skipped** on Windows. The skipped cases require symbolic-link privileges unavailable in the test environment. Coverage includes motion criteria, manual ranges and reference protection, exclusion handling, graph viewport navigation, language translations, CLI validation, safe report paths and source-format planning.
 
-Windows에서 131개 중 **129개 통과, 2개 생략**했습니다. 생략한 항목은 환경의 심볼릭 링크 권한이 필요한 경우입니다. 모션 기준·수동 구간/참조 보호·제외·그래프 탐색·번역·CLI·보고서 경로·원본 포맷 계획을 검증했습니다.
+Windows에서 133개 중 **131개 통과, 2개 생략**했습니다. 생략한 항목은 환경의 심볼릭 링크 권한이 필요한 경우입니다. 모션 기준·수동 구간/참조 보호·제외·그래프 탐색·번역·CLI·보고서 경로·원본 포맷 계획을 검증했습니다.
 
 ## Actual GPU renders / 실제 GPU 렌더
 
@@ -20,6 +20,7 @@ Windows에서 131개 중 **129개 통과, 2개 생략**했습니다. 생략한 �
 | HEVC Main10 MP4 | Matching source properties / 원본 형식 유지 |
 | Full Higgsfield source,721frames,1920×1080,24fps | HEVC Main10/color tags/audio retained; decoded AAC hash matched / HEVC·색정보·오디오 유지, AAC 디코딩 해시 일치 |
 | CLI manual render,12frames,30000/1001fps | References3/6 replaced4/5; count/FPS/audio retained / 3·6 참조로4·5 교체, 프레임·FPS·오디오 유지 |
+| Cropped jump example,34frames,24fps | Cut original111–144 first; +37.1% detection,11 replacements,11→0 candidates,34frames retained / 원본111–144를 먼저 잘라 분석,11장 교체,후보11→0,34프레임 유지 |
 
 Short audio-bearing fixtures also retained their decoded audio hashes. Source files remained unchanged. These tests establish the supported export path, not universal format compatibility or perfect reconstruction.
 
@@ -29,11 +30,13 @@ Short audio-bearing fixtures also retained their decoded audio hashes. Source fi
 
 - Korean/English live switch retains analysis, candidates, exclusions, frame position and zoom.
 - Graph zoom, panning, point seeking, threshold handle, full-range reset and small-window layout checked.
+- 82 UI checks cover the frame1-to-last display, vertical maximum/Auto/Ctrl+wheel, focus handling and both-axis Fit reset.
 - English main UI and all help tabs checked for clipping and untranslated labels.
 - Frozen GUI startup and console analysis checked separately from source execution.
 
 - 한국어/영어 전환 후 분석·목록·제외·재생 위치·확대 상태 유지 확인.
 - 그래프 확대·이동·클릭·기준 손잡이·전체 보기·작은 창 배치 확인.
+- UI82항목으로 1프레임~마지막 표시, 세로 최대·자동·Ctrl+휠, 입력 포커스와 양축 전체 초기화 확인.
 - 영문 메인 UI와 도움말 탭의 잘림·미번역 확인.
 - 소스 실행과 별도로 패키지 GUI 시작·CLI 분석 확인.
 

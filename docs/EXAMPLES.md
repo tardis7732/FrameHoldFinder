@@ -1,45 +1,47 @@
-# 실제 영상 예시
+# 실제 영상 예시 — 점프 구간 보정
 
 [한국어](EXAMPLES.md) · [English](EXAMPLES.en.md) · [처음으로](../README.md)
 
-![원본과 보정본 비교 — 0.5배속](images/comparison-half-speed.gif)
+![34프레임 점프 구간 비교 — 0.25배속](images/jump-comparison-quarter-speed.gif)
 
-[정상 속도 비교 영상](media/comparison-original-corrected.mp4) · [예시 파일 다운로드](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
+[전체 정상 속도 비교 영상](media/comparison-original-corrected.mp4) · [예시 파일 다운로드](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 
-## 입력
+## 먼저 자르고, 다시 분석
 
-작성자의 Higgsfield 계정에서 내려받은 Seedance 영상의 **연속된 원본 265–408프레임**을 사용했습니다. 이 예시 파일은 1–144프레임으로 번호를 다시 매겼습니다. 배포 크기를 줄이기 위해 H.264로 재인코딩했으며, 문제를 만들기 위한 프레임 복제·삽입·삭제·속도 변경은 하지 않았습니다. 예시 구간에는 샷 전환이 포함되므로 모든 피크를 프레임 드랍으로 단정하지 않습니다.
+작성자의 Higgsfield 계정에서 내려받은 Seedance 영상입니다. 기존 144프레임 예시의 **111–144프레임을 먼저 잘라** `jump-original.mp4`를 만들고, 이 **34프레임 파일을 새로 분석**했습니다. 전체 영상의 분석 결과를 잘라 사용한 것이 아닙니다.
 
-- 1920×1080, 24fps, 144프레임, 6초
-- 예시 발췌본과 비교 영상은 **무음**
-- GIF는 차이를 보기 위한 **0.5배속**이며, 원본·보정본 MP4는 정상 속도
+- 원본·보정본: **1920×1080, 24fps, 34프레임, 약 1.417초**, 무음
+- 새 번호 **1–34**에 **110을 더하면** 기존 예시의 **111–144**에 대응합니다.
+- H.264 High / yuv420p로 저장했습니다. 선택 구간 안에 결함을 만들기 위한 프레임 복제·삽입·삭제·속도 변경은 하지 않았습니다.
+- 위 GIF는 전체 34프레임의 **0.25배속 비교**입니다. 원본·보정본과 전체 비교 MP4는 정상 속도입니다.
 
-## 같은 조건으로 분석
+## 검출과 교체
 
-분석 폭 960, 속도 +5%, 최소 이동 4.8px, 유효점 30%, 최소 20점, 홀드 허용 이동 0.5px를 사용했습니다.
+**속도 기준 +37.1%**로 분석해 점프 11곳을 검출했습니다. **프로그램 기본값은 +5%로 유지됩니다.** 나머지는 분석 폭 960, 최소 이동 4.8px, 유효점 30%, 최소 20점, 홀드 허용 이동 0.5px입니다.
 
-| 결과 | 보정 전 | 보정 후 재분석 |
+교체 프레임(새 번호): **3, 5, 7, 11, 13, 15, 19, 23, 27, 29, 31**. 각 프레임을 바로 앞뒤 원본의 중간 이미지로 생성해 교체합니다. 예를 들어 **2→3 점프는 2·4를 참조해 3을 생성**하며, 기존 예시 번호로는 **112·114를 참조해 113을 생성**합니다.
+
+![잘라낸 34프레임 영상의 분석 UI](images/ui-ko.png)
+
+| 결과 | 보정 전 | 같은 조건으로 재분석 |
 | --- | ---: | ---: |
-| 점프 후보 | 20 | 0 |
+| 점프 후보 (+37.1% 기준) | 11 | 0 |
 | 홀드 후보 | 0 | 0 |
-| 총 프레임 | 144 | 144 |
+| 첫 점프 2→3의 속도 초과율 | 194.561% | 0.631% |
+| 총 프레임 | 34 | 34 |
 | FPS | 24 | 24 |
-| 길이 | 6초 | 6초 |
+| 길이 | 약 1.417초 | 약 1.417초 |
 
-검출된 기존 20프레임을 교체했습니다. 원래 후보 구간의 속도 초과율은 15.51–194.30%, 보정 뒤 같은 구간은 0–1.403%였습니다. 자세한 수치는 [분석 요약 JSON](example-results.json)에 있습니다.
-
-**후보가 0개가 됐다는 것은 이 설정의 검출 기준을 넘지 않았다는 뜻입니다.** 실제 누락 프레임을 복원했다거나 시각적 결함이 전혀 없다는 증거가 아닙니다. 모션 수치와 함께 보간 경계·얼굴·손·가려지는 영역을 직접 검토하세요.
-
-![실제 분석 UI](images/ui-ko.png)
+검출됐던 11개 구간의 보정 후 속도 초과율은 **0–0.876%**입니다. 이 결과는 위 +37.1% 설정에 해당합니다. 기본 +5%처럼 기준을 바꾸면 후보 결과도 달라질 수 있으며, 후보가 0이라는 사실만으로 실제 누락 프레임 복원이나 모든 시각적 결함의 해결을 보장하지 않습니다. [분석 요약 JSON](example-results.json)
 
 ## 재현
 
-릴리스의 **FrameHoldFinder-v1.0-Examples.zip**을 풀면 `examples` 폴더에 원본 발췌·보정본·비교 영상이 있습니다.
+릴리스의 **FrameHoldFinder-v1.0-Examples.zip**을 풀면 `examples` 폴더에 `jump-original.mp4`, `jump-corrected.mp4`, 비교 영상이 있습니다. 원본은 이미 111–144 구간으로 잘라낸 파일입니다.
 
 ```powershell
-.\FrameHoldFinder-CLI.exe analyze "examples\higgsfield-motion-original.mp4"
-.\FrameHoldFinder-CLI.exe render "examples\higgsfield-motion-original.mp4" -o "examples\my-corrected.mp4"
-.\FrameHoldFinder-CLI.exe analyze "examples\my-corrected.mp4"
+.\FrameHoldFinder-CLI.exe analyze "examples\jump-original.mp4" --threshold 37.1
+.\FrameHoldFinder-CLI.exe render "examples\jump-original.mp4" --threshold 37.1 -o "examples\my-corrected.mp4"
+.\FrameHoldFinder-CLI.exe analyze "examples\my-corrected.mp4" --threshold 37.1
 ```
 
-이 예시는 오디오 검증용이 아닙니다. 별도의 721프레임 원본과 짧은 오디오 포함 테스트에서 오디오 복사와 프레임 수/FPS 유지를 확인했습니다. [검증 내역](VALIDATION.md)
+이 무음 예시는 오디오 검증용이 아닙니다. 별도의 오디오 포함 영상에서 복사와 프레임 수/FPS 유지를 확인했습니다. [검증 내역](VALIDATION.md)
