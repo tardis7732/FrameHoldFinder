@@ -3,7 +3,9 @@
 from pathlib import Path
 import shutil
 
-root = Path(SPECPATH).resolve()
+packaging = Path(SPECPATH).resolve()
+root = packaging.parent
+source = root / 'src'
 
 
 def executable(name):
@@ -16,12 +18,12 @@ def executable(name):
 binaries = [(executable('ffmpeg'), 'bin'), (executable('ffprobe'), 'bin')]
 # These modules run in the separately installed NVIDIA Python environment, so
 # their source must remain available beside one another outside the PYZ archive.
-data = [(str(root / 'sdk_worker.py'), '.'), (str(root / 'source_format.py'), '.')]
+data = [(str(source / 'sdk_worker.py'), '.'), (str(source / 'source_format.py'), '.')]
 
-gui = Analysis([str(root / 'app.py')], pathex=[str(root)], binaries=binaries,
+gui = Analysis([str(source / 'app.py')], pathex=[str(source)], binaries=binaries,
                datas=data, hiddenimports=[], hookspath=[], hooksconfig={},
                runtime_hooks=[], excludes=[], noarchive=False, optimize=0)
-cli = Analysis([str(root / 'cli.py')], pathex=[str(root)], binaries=[],
+cli = Analysis([str(source / 'cli.py')], pathex=[str(source)], binaries=[],
                datas=[], hiddenimports=[], hookspath=[], hooksconfig={},
                runtime_hooks=[], excludes=[], noarchive=False, optimize=0)
 
@@ -29,11 +31,11 @@ gui_exe = EXE(PYZ(gui.pure), gui.scripts, [], exclude_binaries=True,
               name='FrameHoldFinder', debug=False, bootloader_ignore_signals=False,
               strip=False, upx=False, console=False,
               disable_windowed_traceback=False,
-              icon=str(root / 'app.ico'), version=str(root / 'version_info.txt'))
+              icon=str(packaging / 'app.ico'), version=str(packaging / 'version_info.txt'))
 cli_exe = EXE(PYZ(cli.pure), cli.scripts, [], exclude_binaries=True,
               name='FrameHoldFinder-CLI', debug=False, bootloader_ignore_signals=False,
               strip=False, upx=False, console=True,
-              icon=str(root / 'app.ico'), version=str(root / 'version_info.txt'))
+              icon=str(packaging / 'app.ico'), version=str(packaging / 'version_info.txt'))
 
 # COLLECT normalizes duplicate destinations from the same interpreter and
 # dependencies. Both launchers use this one _internal directory.

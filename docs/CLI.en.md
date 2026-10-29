@@ -2,7 +2,7 @@
 
 [한국어](CLI.md) · [English](CLI.en.md) · [Home](../README.en.md)
 
-`FrameHoldFinder-CLI.exe` does not open the GUI. From source, replace it with `python cli.py`.
+`FrameHoldFinder-CLI.exe` does not open the GUI. From the repository root, replace it with `python src/cli.py` to run from source.
 
 ```powershell
 # Analyze only; no SDK required

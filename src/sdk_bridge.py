@@ -12,7 +12,7 @@ import hold_core as core
 
 
 def app_dir():
-    return Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).parent
+    return Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).resolve().parent.parent
 
 
 def worker():
@@ -26,7 +26,7 @@ def settings_file():
 
 
 def _configured_paths():
-    for config in (settings_file(),app_dir()/'sdk_settings.json'):
+    for config in (settings_file(),app_dir()/'config'/'sdk_settings.json',app_dir()/'sdk_settings.json'):
         try:
             value=json.loads(config.read_text(encoding='utf-8-sig'))['python']
             if isinstance(value,str) and value.strip():yield value

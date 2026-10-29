@@ -75,17 +75,21 @@ git clone https://github.com/tardis7732/FrameHoldFinder.git
 cd FrameHoldFinder
 py -3.11 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-& .\.venv\Scripts\python.exe app.py
-& .\.venv\Scripts\python.exe cli.py --help
+& .\.venv\Scripts\python.exe src/app.py
+& .\.venv\Scripts\python.exe src/cli.py --help
 ```
 
 Install FFmpeg using the [official download links](https://ffmpeg.org/download.html), or run `winget install --id Gyan.FFmpeg.Essentials -e` and open a fresh terminal.
 
 ```powershell
-& .\.venv\Scripts\python.exe -m unittest discover -p "test_*.py"
-& .\.venv\Scripts\python.exe -m pip install pyinstaller
-.\build.ps1 -PythonExe .\.venv\Scripts\python.exe
+& .\.venv\Scripts\python.exe scripts/test.py
+& .\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+.\scripts\build.ps1 -PythonExe .\.venv\Scripts\python.exe
 ```
+
+Run these commands from the repository root. Application code lives in `src/`, tests in `tests/`, and build configuration in `packaging/`. The default build output is `dist/FrameHoldFinder`.
+
+Connect the SDK through the GUI. If you need a source-local configuration file, copy `config/sdk_settings.example.json` to `config/sdk_settings.json` and edit it. Saved per-user SDK settings take precedence.
 
 ## Troubleshooting
 

@@ -97,4 +97,13 @@ Higgsfield 계정의 Seedance 영상에서 기존 예시의 **111–144프레임
 
 소스 실행·빌드는 [설치 안내](docs/INSTALL.md#소스에서-실행)에 있습니다. Windows 11 x64 / Python 3.11 / RTX 5070 Ti에서 확인했습니다. [검증 내역](docs/VALIDATION.md) · [MIT 라이선스](LICENSE) · [외부 구성요소](THIRD_PARTY.md).
 
+| 폴더 | 내용 |
+| --- | --- |
+| `src/` | 앱과 CLI 소스 |
+| `tests/` | 자동 테스트 |
+| `scripts/` | 테스트 실행·Windows 빌드 |
+| `packaging/` | 실행 파일 아이콘·버전·PyInstaller 설정 |
+| `config/` | SDK 설정 예시 |
+| `docs/` | 설치 안내·예시 영상·외부 라이선스 |
+
 NVIDIA, Foundry, Higgsfield의 공식 제품이 아닙니다. SDK와 데모 영상은 프로젝트 소스 라이선스와 별개입니다.

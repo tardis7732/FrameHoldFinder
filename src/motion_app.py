@@ -62,7 +62,7 @@ class CategoryLabel(tk.Text):
 
 def test_video_choices():
     """Optional local testing shortcuts; remove the file to remove the UI."""
-    folder=Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).parent
+    folder=Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).resolve().parent.parent/'config'
     try:
         data=json.loads((folder/'test_videos.json').read_text(encoding='utf-8-sig'))
         if not isinstance(data,list):return {}

@@ -2,7 +2,7 @@
 
 [한국어](CLI.md) · [English](CLI.en.md) · [처음으로](../README.md)
 
-Windows 패키지의 `FrameHoldFinder-CLI.exe`는 GUI를 열지 않습니다. 소스에서는 `python cli.py`로 바꿔 실행합니다.
+Windows 패키지의 `FrameHoldFinder-CLI.exe`는 GUI를 열지 않습니다. 소스에서는 저장소 최상위 폴더에서 `python src/cli.py`로 바꿔 실행합니다.
 
 ```powershell
 # 분석만: SDK 불필요

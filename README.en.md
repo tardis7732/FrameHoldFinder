@@ -97,4 +97,13 @@ A **reference-original comparison workflow for Video Edit outputs** is planned. 
 
 See [source setup and build](docs/INSTALL.en.md#running-from-source). Verified on Windows 11 x64 / Python 3.11 / RTX 5070 Ti. [Validation](docs/VALIDATION.md) · [MIT license](LICENSE) · [Third-party components](THIRD_PARTY.md).
 
+| Folder | Contents |
+| --- | --- |
+| `src/` | Application and CLI source |
+| `tests/` | Automated tests |
+| `scripts/` | Test runner and Windows build |
+| `packaging/` | Icon, version metadata and PyInstaller configuration |
+| `config/` | Example SDK configuration |
+| `docs/` | Setup guides, sample media and third-party licenses |
+
 This is not an official NVIDIA, Foundry or Higgsfield product. SDK and demo-media terms are separate from the application source license.

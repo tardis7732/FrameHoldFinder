@@ -16,6 +16,8 @@ The application source is MIT licensed. Bundled dependencies keep their own lice
 | NVIDIA Video Effects Python 0.2.0.0 | Optional interpolation, separately installed / 별도 설치 보간 | [NVIDIA package](https://pypi.org/project/nvidia-vfx/), [API](https://docs.nvidia.com/maxine/vfx-python/latest/api.html) |
 | CuPy CUDA12x 14.2.0 | Optional CUDA arrays, separately installed / 별도 설치 GPU 배열 | [CuPy](https://cupy.dev/) |
 
+Bundled license notices / 포함된 라이선스 고지: [TkDND](docs/licenses/TKDND-LICENSE.txt), [tkinterdnd2](docs/licenses/TKINTERDND2-LICENSE.txt), [all notices / 전체 고지](docs/licenses).
+
 ## FFmpeg
 
 The Windows release includes unmodified FFmpeg/FFprobe from the Gyan 9.0.1 essentials build, configured with `--enable-gpl --enable-version3`. Those executables are GPL v3 or later, not MIT. The recorded build configuration and GPL text are in [docs/licenses](docs/licenses). FFmpeg is invoked as a separate process.

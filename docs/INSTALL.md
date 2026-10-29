@@ -75,17 +75,21 @@ git clone https://github.com/tardis7732/FrameHoldFinder.git
 cd FrameHoldFinder
 py -3.11 -m venv .venv
 & .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-& .\.venv\Scripts\python.exe app.py
-& .\.venv\Scripts\python.exe cli.py --help
+& .\.venv\Scripts\python.exe src/app.py
+& .\.venv\Scripts\python.exe src/cli.py --help
 ```
 
 FFmpeg가 없다면 [공식 다운로드 안내](https://ffmpeg.org/download.html)를 따라 설치하거나 `winget install --id Gyan.FFmpeg.Essentials -e`로 설치한 뒤 새 터미널을 여세요.
 
 ```powershell
-& .\.venv\Scripts\python.exe -m unittest discover -p "test_*.py"
-& .\.venv\Scripts\python.exe -m pip install pyinstaller
-.\build.ps1 -PythonExe .\.venv\Scripts\python.exe
+& .\.venv\Scripts\python.exe scripts/test.py
+& .\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+.\scripts\build.ps1 -PythonExe .\.venv\Scripts\python.exe
 ```
+
+위 명령은 저장소 최상위 폴더에서 실행합니다. 앱 코드는 `src/`, 테스트는 `tests/`, 빌드 설정은 `packaging/`에 있습니다. 빌드 결과는 기본적으로 `dist/FrameHoldFinder`에 생성됩니다.
+
+SDK는 GUI에서 연결하면 됩니다. 소스용 설정 파일이 필요한 경우 `config/sdk_settings.example.json`을 `config/sdk_settings.json`으로 복사해 수정할 수 있습니다. 사용자별로 저장된 SDK 설정이 있으면 그 값이 우선합니다.
 
 ## 문제 해결
 
