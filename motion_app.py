@@ -81,7 +81,7 @@ class App:
         self.sdk_ready=False;self.closing=False;self.dragging=False;self.pending=None
         self.sdk_check_generation=0;self.sdk_window=None;self.preferences_window=None
         self.manual_ranges=[];self.manual_window=None
-        self.graph_view=FrameViewport();self.graph_panning=False
+        self.graph_view=FrameViewport();self.graph_panning=False;self.graph_y_max=None
         self.options_pending=None;self.options_valid=True;self.player=None;self.playhead=1;self.last_selected_key=None
         self.media_generation=0;self.media_after=None;self.media_info=None;self.last_output=None
         root.title(tr('Frame Hold Finder · 모션 분석 1.0'));root.geometry('1440x930');root.minsize(1100,760)
@@ -237,6 +237,19 @@ class App:
         self.graph_zoom_out_button.pack(side='right',padx=(4,0))
         self.graph_scrollbar=ttk.Scrollbar(graph_navigation,orient='horizontal',style='Graph.Horizontal.TScrollbar',command=self.graph_scroll,takefocus=True)
         self.graph_scrollbar.pack(side='left',fill='x',expand=True)
+        graph_vertical=ttk.Frame(review,style='Surface.TFrame')
+        graph_vertical.pack(fill='x',pady=(2,4))
+        ttk.Label(graph_vertical,text=tr('세로 최대'),style='Muted.TLabel').pack(side='left',padx=(0,6))
+        self.graph_y_var=tk.StringVar(value='1');self.graph_y_display='1'
+        self.graph_y_entry=ttk.Spinbox(graph_vertical,textvariable=self.graph_y_var,from_=1e-6,to=1e9,
+            increment=5,width=7,command=self.graph_y_apply)
+        self.graph_y_entry.pack(side='left')
+        self.graph_y_entry.bind('<Return>',self.graph_y_apply)
+        self.graph_y_entry.bind('<FocusOut>',self.graph_y_apply)
+        ttk.Label(graph_vertical,text='%',style='Muted.TLabel').pack(side='left',padx=(4,8))
+        self.graph_y_auto_button=ttk.Button(graph_vertical,text=tr('자동'),width=4,style='Compact.TButton',command=self.graph_y_auto)
+        self.graph_y_auto_button.pack(side='left')
+        attach_tooltip(self.graph_y_entry,'세로축 표시 범위 · Ctrl+휠로 확대·축소')
         self.graph_hint=DisplayVar();self.update_graph_hint()
         self.graph_hint_label=CategoryLabel(review,textvariable=self.graph_hint,foreground=PALETTE['muted'],font=('맑은 고딕',9));self.graph_hint_label.pack(fill='x',pady=(0,6))
         detail=ttk.Frame(review,style='Surface.TFrame',height=50);self.detail_host=detail
@@ -297,6 +310,7 @@ class App:
             self.player.previous_button,self.player.play_button,self.player.next_button,self.player.frame_entry,
             self.add_range_button,self.previous_candidate_button,self.next_candidate_button,
             self.graph_scrollbar,self.graph_zoom_out_button,self.graph_zoom_in_button,self.graph_fit_button,
+            self.graph_y_entry,self.graph_y_auto_button,
             self.table,self.toggle_button,self.delete_range_button,self.quality_box,self.render_button]
         root.bind_class(self.playback_key_tag,'<Tab>',lambda e:self.move_focus(e,1))
         root.bind_class(self.playback_key_tag,'<Shift-Tab>',lambda e:self.move_focus(e,-1))
@@ -491,7 +505,7 @@ class App:
         self.media_generation+=1
         if self.media_after:self.root.after_cancel(self.media_after);self.media_after=None
         self.player.clear();self.playhead=1;self.last_selected_key=None
-        self.graph_view.reset();self.graph_panning=False;self.dragging=False
+        self.graph_view.reset();self.graph_panning=False;self.dragging=False;self.graph_y_max=None
         self.analysis=None;self.model=None;self.rows=[];self.excluded=manual_excluded
         self.update_minimum_motion()
         self.table.delete(*self.table.get_children());self.summary.set('검출 구간')
@@ -703,8 +717,42 @@ class App:
         w=max(100,self.graph.winfo_width());h=max(100,self.graph.winfo_height())
         try:t=max(0,float(self.threshold.get()))
         except ValueError:t=5
-        ymax=motion_graph_limit(self.model['metrics'] if self.model else [])
-        return w,h,68,w-16,14,h-24,ymax,t
+        ymax=self.graph_y_limit()
+        right_pad=max(16,4*len(str(self.analysis['frames']))+4) if self.analysis else 16
+        return w,h,68,w-right_pad,14,h-24,ymax,t
+
+    def graph_y_limit(self):
+        return self.graph_y_max if self.graph_y_max is not None else motion_graph_limit(self.model['metrics'] if self.model else [])
+
+    def sync_graph_y(self):
+        self.graph_y_display=f'{self.graph_y_limit():.4g}'
+        self.graph_y_var.set(self.graph_y_display)
+
+    def graph_y_apply(self,event=None):
+        if event is not None and event.type==tk.EventType.KeyPress and event.state & 0x0004:return
+        if self.busy or not self.model:return 'break'
+        # Compare with the last displayed value, not a model that may have
+        # refreshed while this field had focus. Only edits select manual mode.
+        if self.graph_y_var.get()==self.graph_y_display:
+            self.sync_graph_y();return 'break'
+        try:
+            value=float(self.graph_y_var.get())
+            if not math.isfinite(value) or not 0<value<=1e9:raise ValueError()
+        except ValueError:
+            self.sync_graph_y();return 'break'
+        self.graph_y_max=value;self.sync_graph_y();self.draw_graph()
+        return 'break'
+
+    def graph_y_zoom(self,factor):
+        if self.busy or not self.model or self.dragging:return
+        current=self.graph_y_limit()
+        self.graph_y_max=max(min(1e-6,current),min(max(1e9,current),current/factor))
+        self.sync_graph_y();self.draw_graph()
+
+    def graph_y_auto(self):
+        if self.busy or not self.model:return
+        self.graph_y_max=None
+        self.sync_graph_y();self.draw_graph()
 
     def update_graph_controls(self):
         self.graph_view.set_frames(self.analysis['frames'] if self.analysis else 0)
@@ -714,8 +762,12 @@ class App:
         self.graph_scrollbar.set(*view.fractions())
         self.graph_scrollbar.state(['!disabled'] if valid and view.zoomed else ['disabled'])
         self.graph_zoom_in_button.configure(state='normal' if valid and view.span>min(4,view.full_span)+1e-8 else 'disabled')
-        for widget in (self.graph_zoom_out_button,self.graph_fit_button):
-            widget.configure(state='normal' if valid and view.zoomed else 'disabled')
+        self.graph_zoom_out_button.configure(state='normal' if valid and view.zoomed else 'disabled')
+        self.graph_fit_button.configure(state='normal' if valid and (view.zoomed or self.graph_y_max is not None) else 'disabled')
+        self.graph_y_entry.configure(state='normal' if valid else 'disabled')
+        self.graph_y_auto_button.configure(state='normal' if valid and self.graph_y_max is not None else 'disabled')
+        if self.root.focus_get()!=self.graph_y_entry:
+            self.sync_graph_y()
 
     def graph_zoom(self,factor,anchor=None):
         if self.busy or not self.model or self.dragging:return
@@ -725,7 +777,7 @@ class App:
 
     def graph_fit(self):
         if self.busy or not self.model:return
-        self.graph_view.reset(self.analysis['frames']);self.draw_graph()
+        self.graph_view.reset(self.analysis['frames']);self.graph_y_auto()
 
     def graph_scroll(self,*args):
         if self.busy or not self.model or self.dragging:return
@@ -742,7 +794,9 @@ class App:
         delta=1 if getattr(event,'num',None)==4 else -1 if getattr(event,'num',None)==5 else getattr(event,'delta',0)/120
         delta=max(-3,min(3,delta))
         if not delta:return 'break'
-        if event.state & 0x0001:
+        if event.state & 0x0004:
+            self.graph_y_zoom(1.5**delta)
+        elif event.state & 0x0001:
             if self.graph_view.pan(-delta*max(1,self.graph_view.span*.15)):self.draw_graph()
         else:
             anchor=self.graph_view.left+(event.x-x0)/max(1,x1-x0)*self.graph_view.span
@@ -771,7 +825,7 @@ class App:
         if self.model and self.analysis:
             cell=(x1-x0)/max(1,view.span)
             for frame,excluded in hold_frame_marks(self.model,self.rows):
-                if frame<2 or frame+.44<view.left or frame-.44>view.right:continue
+                if frame<1 or frame+.44<view.left or frame-.44>view.right:continue
                 x=x_at(frame)
                 g.create_rectangle(max(x0,x-cell*.44),y0,min(x1,x+cell*.44),y1,
                     fill='#fff5f8' if excluded else '#fbe7ee',outline='#edceda' if excluded else '',

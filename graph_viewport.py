@@ -22,7 +22,11 @@ def _integer(value, name, minimum):
 
 
 class FrameViewport:
-    """A continuous view over integer arrival frames 2 through N.
+    """A continuous display view over source frames 1 through N.
+
+    Motion measurements still belong to arrival frames 2 through N. Including
+    frame 1 here makes the whole source timeline seekable without inventing a
+    measurement before the first frame.
 
     ``anchor`` is a frame coordinate. ``moveto`` takes a fraction of the full
     domain, as a Tk scrollbar does. ``visible_frames`` includes only integers
@@ -38,7 +42,7 @@ class FrameViewport:
     @staticmethod
     def _domain(frames):
         frames = _integer(frames, 'frames', 0)
-        return frames, min(2, max(1, frames)), max(1, frames)
+        return frames, 1, max(1, frames)
 
     def reset(self, frames=0):
         frames, first, last = self._domain(frames)
@@ -124,7 +128,11 @@ class FrameViewport:
         return (frame - self.left) / self.span if self.span else .5
 
     def ticks(self, max_ticks):
-        """Nice integer 1/2/5 steps, plus boundaries when labels have room."""
+        """Reserve both visible endpoints, then fit spaced 1/2/5-step ticks.
+
+        Interior labels must leave enough room for the endpoint labels rather
+        than displacing them. With a budget of one, only the midpoint fits.
+        """
         maximum = _integer(max_ticks, 'max_ticks', 1)
         visible = self.visible_frames
         low, high = visible.start, visible.stop - 1
@@ -138,9 +146,7 @@ class FrameViewport:
         power = 10 ** math.floor(math.log10(spacing))
         step = next(multiplier * power for multiplier in (1, 2, 5, 10) if multiplier * power >= spacing)
         step = max(1, int(step))
-        first_tick = ((low + step - 1) // step) * step
-        ticks = list(range(first_tick, high + 1, step))
-        for edge in (low, high):
-            if len(ticks) < maximum and edge not in ticks and all(abs(edge - tick) >= spacing for tick in ticks):
-                ticks.append(edge)
-        return sorted(ticks)
+        first_tick = math.ceil((low + spacing) / step) * step
+        last_tick = math.floor((high - spacing) / step) * step
+        ticks = list(range(first_tick, last_tick + 1, step))
+        return [low, *ticks, high]

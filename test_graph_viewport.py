@@ -8,7 +8,7 @@ from graph_viewport import FrameViewport
 class FrameViewportTests(unittest.TestCase):
     def test_empty_single_and_short_domains(self):
         view=FrameViewport()
-        for frames,first,last in ((0,1,1),(1,1,1),(2,2,2),(3,2,3),(5,2,5),(102,2,102)):
+        for frames,first,last in ((0,1,1),(1,1,1),(2,1,2),(3,1,3),(5,1,5),(102,1,102)):
             with self.subTest(frames=frames):
                 view.reset(frames)
                 self.assertEqual((view.first,view.last),(first,last))
@@ -22,103 +22,104 @@ class FrameViewportTests(unittest.TestCase):
                 self.assertEqual(list(view.visible_frames),list(range(first,last+1)))
         view.reset(2)
         self.assertFalse(view.zoom(2));self.assertFalse(view.pan(20));self.assertFalse(view.reveal(100))
-        self.assertEqual(view.position(2),.5)
-        self.assertEqual(view.ticks(8),[2])
+        self.assertEqual(view.position(1),0.)
+        self.assertEqual(view.position(2),1.)
+        self.assertEqual(view.ticks(8),[1,2])
 
     def test_same_domain_preserves_view_and_new_domain_resets(self):
-        view=FrameViewport();view.reset(102)
+        view=FrameViewport();view.reset(101)
         view.zoom(2);view.pan(7.25)
         before=(view.left,view.right)
-        self.assertFalse(view.set_frames(102));self.assertEqual((view.left,view.right),before)
-        self.assertTrue(view.set_frames(202));self.assertEqual((view.left,view.right),(2,202))
-        self.assertFalse(view.reset(202))
+        self.assertFalse(view.set_frames(101));self.assertEqual((view.left,view.right),before)
+        self.assertTrue(view.set_frames(201));self.assertEqual((view.left,view.right),(1,201))
+        self.assertFalse(view.reset(201))
         view.zoom(2)
-        self.assertTrue(view.reset(202));self.assertFalse(view.zoomed)
+        self.assertTrue(view.reset(201));self.assertFalse(view.zoomed)
         view.reset(0)
         self.assertFalse(view.set_frames(1));self.assertEqual(view.frames,1)
 
     def test_zoom_preserves_cursor_frame_fraction_in_both_directions(self):
-        view=FrameViewport();view.reset(202)
-        anchor=56.;fraction=view.position(anchor)
+        view=FrameViewport();view.reset(201)
+        anchor=55.;fraction=view.position(anchor)
         self.assertAlmostEqual(fraction,.27)
         self.assertTrue(view.zoom(2,anchor))
         self.assertEqual(view.span,100.)
         self.assertAlmostEqual(view.position(anchor),fraction)
         self.assertTrue(view.zoom(.5,anchor))
-        self.assertEqual((view.left,view.right),(2,202))
+        self.assertEqual((view.left,view.right),(1,201))
         self.assertAlmostEqual(view.position(anchor),fraction)
         self.assertFalse(view.zoom(1,anchor))
 
     def test_zoom_at_edges_clamps_and_full_view_is_recoverable(self):
-        view=FrameViewport();view.reset(102)
-        view.zoom(2,anchor=2)
-        self.assertEqual((view.left,view.right),(2,52))
-        view.zoom(2,anchor=52)
-        self.assertEqual((view.left,view.right),(27,52))
+        view=FrameViewport();view.reset(101)
+        view.zoom(2,anchor=1)
+        self.assertEqual((view.left,view.right),(1,51))
+        view.zoom(2,anchor=51)
+        self.assertEqual((view.left,view.right),(26,51))
         view.zoom(.001,anchor=30)
-        self.assertEqual((view.left,view.right),(2,102))
+        self.assertEqual((view.left,view.right),(1,101))
         view.zoom(2,anchor=1000)
-        self.assertEqual((view.left,view.right),(52,102))
+        self.assertEqual((view.left,view.right),(51,101))
 
     def test_minimum_span_and_five_integer_points_when_aligned(self):
-        view=FrameViewport();view.reset(102)
+        view=FrameViewport();view.reset(101)
         self.assertTrue(view.zoom(1e10))
-        self.assertEqual((view.left,view.right,view.span),(50,54,4))
-        self.assertEqual(list(view.visible_frames),[50,51,52,53,54])
+        self.assertEqual((view.left,view.right,view.span),(49,53,4))
+        self.assertEqual(list(view.visible_frames),[49,50,51,52,53])
         self.assertFalse(view.zoom(2))
         view.pan(.25)
         self.assertEqual(view.span,4)
-        self.assertEqual(list(view.visible_frames),[51,52,53,54])
+        self.assertEqual(list(view.visible_frames),[50,51,52,53])
         view.reset(4)
-        self.assertFalse(view.zoom(100));self.assertEqual(view.span,2)
+        self.assertFalse(view.zoom(100));self.assertEqual(view.span,3)
         custom=FrameViewport(min_span=8);custom.reset(102);custom.zoom(1e10)
         self.assertEqual(custom.span,8)
 
     def test_pan_clamps_without_changing_width(self):
-        view=FrameViewport();view.reset(102);view.zoom(5)
+        view=FrameViewport();view.reset(101);view.zoom(5)
         self.assertEqual(view.span,20)
-        self.assertTrue(view.pan(500));self.assertEqual((view.left,view.right),(82,102))
+        self.assertTrue(view.pan(500));self.assertEqual((view.left,view.right),(81,101))
         self.assertFalse(view.pan(1))
-        self.assertTrue(view.pan(-500));self.assertEqual((view.left,view.right),(2,22))
+        self.assertTrue(view.pan(-500));self.assertEqual((view.left,view.right),(1,21))
         self.assertFalse(view.pan(-1));self.assertFalse(view.pan(0))
 
     def test_scrollbar_moveto_uses_full_domain_fraction(self):
-        view=FrameViewport();view.reset(102);view.zoom(5)
-        self.assertTrue(view.moveto(.25));self.assertEqual((view.left,view.right),(27,47))
+        view=FrameViewport();view.reset(101);view.zoom(5)
+        self.assertTrue(view.moveto(.25));self.assertEqual((view.left,view.right),(26,46))
         self.assertEqual(view.fractions(),(.25,.45))
         self.assertTrue(view.moveto(1));self.assertEqual(view.fractions(),(.8,1.))
         self.assertFalse(view.moveto(2))
         self.assertTrue(view.moveto(-3));self.assertEqual(view.fractions(),(0.,.2))
-        view.reset(102);self.assertFalse(view.moveto(.5))
+        view.reset(101);self.assertFalse(view.moveto(.5))
 
     def test_reveal_only_moves_outside_frames_and_uses_directional_margins(self):
-        view=FrameViewport();view.reset(202);view.zoom(10)
-        self.assertEqual((view.left,view.right),(92,112))
-        self.assertFalse(view.reveal(102));self.assertFalse(view.reveal(92));self.assertFalse(view.reveal(112))
+        view=FrameViewport();view.reset(201);view.zoom(10)
+        self.assertEqual((view.left,view.right),(91,111))
+        self.assertFalse(view.reveal(102));self.assertFalse(view.reveal(91));self.assertFalse(view.reveal(111))
         self.assertTrue(view.reveal(150));self.assertEqual((view.left,view.right),(146,166))
         self.assertAlmostEqual(view.position(150),.2)
         self.assertTrue(view.reveal(100));self.assertEqual((view.left,view.right),(84,104))
         self.assertAlmostEqual(view.position(100),.8)
-        self.assertTrue(view.reveal(-100));self.assertEqual(view.left,2)
-        self.assertTrue(view.reveal(1000));self.assertEqual(view.right,202)
+        self.assertTrue(view.reveal(-100));self.assertEqual(view.left,1)
+        self.assertTrue(view.reveal(1000));self.assertEqual(view.right,201)
 
     def test_frame_mapping_stays_inside_fractional_boundaries_and_inverts(self):
-        view=FrameViewport();view.reset(42);view.zoom(2,anchor=8);view.pan(.25)
-        self.assertEqual((view.left,view.right),(5.25,25.25))
-        self.assertEqual((view.frame_at(-1),view.frame_at(0),view.frame_at(1),view.frame_at(2)),(6,6,25,25))
+        view=FrameViewport();view.reset(41);view.zoom(2,anchor=7);view.pan(.25)
+        self.assertEqual((view.left,view.right),(4.25,24.25))
+        self.assertEqual((view.frame_at(-1),view.frame_at(0),view.frame_at(1),view.frame_at(2)),(5,5,24,24))
         for frame in view.visible_frames:
             self.assertEqual(view.frame_at(view.position(frame)),frame)
         for fraction in (0,.001,.1,.33,.5,.75,.999,1):
             self.assertIn(view.frame_at(fraction),view.visible_frames)
-        self.assertLess(view.position(5),0)
-        self.assertGreater(view.position(26),1)
+        self.assertLess(view.position(4),0)
+        self.assertGreater(view.position(25),1)
 
     def test_ticks_are_integer_nice_steps_with_spaced_edges(self):
-        view=FrameViewport();view.reset(202)
-        self.assertEqual(view.ticks(5),[50,100,150,200])
+        view=FrameViewport();view.reset(201)
+        self.assertEqual(view.ticks(5),[1,100,150,201])
         view.reset(182)
-        self.assertEqual(view.ticks(6),[2,50,100,150])
-        self.assertEqual(view.ticks(2),[2,182])
+        self.assertEqual(view.ticks(6),[1,50,100,182])
+        self.assertEqual(view.ticks(2),[1,182])
         self.assertEqual(len(view.ticks(1)),1)
         view.zoom(1000);view.pan(.4)
         ticks=view.ticks(20)
@@ -129,10 +130,36 @@ class FrameViewportTests(unittest.TestCase):
             self.assertEqual(ticks,sorted(set(ticks)))
             self.assertTrue(all(isinstance(frame,int) and frame in view.visible_frames for frame in ticks))
 
+    def test_full_timeline_keeps_first_and_last_labels_for_different_lengths(self):
+        view=FrameViewport()
+        for frames in (2,3,34,83,144,182,202,1001,1034):
+            view.reset(frames)
+            for maximum in range(2,13):
+                with self.subTest(frames=frames,maximum=maximum):
+                    ticks=view.ticks(maximum)
+                    self.assertEqual((ticks[0],ticks[-1]),(1,frames))
+                    self.assertLessEqual(len(ticks),maximum)
+                    spacing=max(1.,(frames-1)/(maximum-1))
+                    self.assertTrue(all(right-left>=spacing-1e-9 for left,right in zip(ticks,ticks[1:])))
+                    self.assertEqual((view.frame_at(0),view.frame_at(1)),(1,frames))
+
+    def test_zoomed_labels_keep_visible_endpoints_and_fit_restores_frame_one(self):
+        view=FrameViewport();view.reset(144);view.zoom(4,anchor=90);view.pan(.3)
+        before=(view.left,view.right)
+        visible=view.visible_frames
+        for maximum in range(2,10):
+            ticks=view.ticks(maximum)
+            self.assertEqual((ticks[0],ticks[-1]),(visible.start,visible.stop-1))
+        self.assertEqual((view.left,view.right),before)
+        view.reset(144)
+        self.assertEqual((view.left,view.right),(1,144))
+        self.assertEqual((view.position(1),view.position(144)),(0.,1.))
+        self.assertEqual((view.ticks(8)[0],view.ticks(8)[-1]),(1,144))
+
     def test_invalid_values_raise_without_changing_the_view(self):
         for value in (0,-1,.5,math.nan,math.inf,True,None,'bad'):
             with self.subTest(min_span=value),self.assertRaises(ValueError):FrameViewport(value)
-        view=FrameViewport();view.reset(102);view.zoom(2)
+        view=FrameViewport();view.reset(101);view.zoom(2)
         original=(view.first,view.last,view.left,view.right)
         for value in (math.nan,math.inf,-math.inf,True,None,'bad'):
             for operation in (view.pan,view.moveto,view.reveal,view.position,view.frame_at,view.ticks,view.set_frames):

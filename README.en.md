@@ -25,7 +25,7 @@ Choose Korean or English under **More → Settings → Language**. Switching lan
 | Hold detection | Finds intervals with near-zero tracked motion. |
 | Jump detection | Marks intervals where the same tracked points move faster than BOTH adjacent intervals. |
 | Combined evaluation | Accounts for the motion expected from uniformly interpolating selected holds. |
-| Review | Click graph points to seek; use the wheel to zoom the time axis and the scrollbar to pan. Fit restores the full range. |
+| Review | Click to seek from frame 1 through the last frame; the wheel zooms time and the scrollbar pans. Adjust **Y Max** by typing, arrows, or Ctrl+wheel. **Auto** adds 10% headroom above the maximum; **Fit** restores the full time range and automatic Y scale. |
 | Manual Add | Select two original reference frames and replace the existing frames between them. |
 | Conflict handling | Disables automatic candidates that conflict with manual generated frames or protected reference frames. |
 | CLI | Analysis, JSON reports, exclusions, manual ranges, SDK checks and rendering. |

@@ -51,6 +51,9 @@ NVIDIA SDK 확인 중…||Checking NVIDIA SDK…
 검출 구간||Detected Ranges
 추가||Add
 전체||Fit
+세로 최대||Y Max
+자동||Auto
+세로축 표시 범위 · Ctrl+휠로 확대·축소||Vertical display range · Ctrl+wheel to zoom
 선택 제외||Exclude Selected
 선택 포함||Include Selected
 삭제||Delete
