@@ -89,7 +89,7 @@ All criteria are adjustable in the UI and CLI. Intentional pauses and accelerati
 
 ![Zoomed motion graph](docs/images/ui-en-zoom.png)
 
-Seedance footage from the author's Higgsfield account is **trimmed to frames 111–144 of the previous example first**, then analyzed as a new **1–34 timeline**. At a **+37.1%** speed threshold, 11 detected jumps are corrected; reanalysis with the same settings changes the candidate count from **11 to 0**. No synthetic frame defects were added, and **34 frames / 24fps / about 1.417 seconds** remain unchanged.
+We analyzed **frames 111–144** of a Seedance clip. At a **+37.1%** speed threshold, the app flagged 11 jump candidates. After correction, the same settings flagged none. Both clips run for **34 frames at 24 fps**.
 
 The GIF above shows all 34 frames at **0.25x**. The application's default speed threshold remains **+5%**; only this example uses +37.1%. [Example notes and normal-speed comparison](docs/EXAMPLES.en.md) · [Download sample media](https://github.com/tardis7732/FrameHoldFinder/releases/latest)
 

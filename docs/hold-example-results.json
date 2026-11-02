@@ -12,7 +12,7 @@
       66
     ],
     "original_frame_offset": 0,
-    "origin": "Contiguous source frames 1–66 from an existing user-owned Higgsfield video. The excerpt was encoded to HEVC Main 10, yuv420p10le, CRF 12 before analysis; available AAC audio was packet-copied from the start with a 2.75-second output limit. No frames were fabricated to create the defect.",
+    "origin": "Contiguous source frames 1–66. The excerpt was encoded to HEVC Main 10, yuv420p10le, CRF 12 before analysis. AAC audio was packet-copied from the start with a 2.75-second output limit.",
     "audio": "AAC audio is retained. AAC packet boundaries can make container/audio duration slightly longer than the exact 2.75-second video duration."
   },
   "settings": {

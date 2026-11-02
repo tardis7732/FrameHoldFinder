@@ -1,6 +1,6 @@
 {
-  "title_en": "Cropped jump example from real Higgsfield footage",
-  "title_ko": "힉스필드 실제 영상의 잘라낸 점프 예시",
+  "title_en": "Jump detection in a 34-frame clip",
+  "title_ko": "34프레임 구간의 점프 감지 예시",
   "sample": {
     "frames": 34,
     "fps": 24,

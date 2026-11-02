@@ -12,7 +12,7 @@ In the comparison, the corrected view on the right shows an **orange border only
 
 ## Trim first, then analyze
 
-The footage was generated with Seedance and downloaded from the author's Higgsfield account. **Frames 111–144 of the previous 144-frame example are extracted first** as `jump-original.mp4`, then this **34-frame file is analyzed afresh**. The analysis is not a cropped view of the full video's results.
+We extracted **frames 111–144** from the Seedance clip and saved them as `jump-original.mp4`. We analyzed that **34-frame clip** starting at frame 1.
 
 - Source and corrected files: **1920×1080, 24fps, 34 frames, about 1.417 seconds**, silent
 - Add **110** to the new frame numbers **1–34** to recover **111–144** in the previous example.

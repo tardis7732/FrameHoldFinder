@@ -10,7 +10,7 @@ In the comparison, the corrected view on the right shows an **orange border only
 
 ## Input and settings
 
-The **first 66 frames of a separate Higgsfield video** from the author's account are extracted first and analyzed as `hold-original.mp4`. Frame numbers match that source. No frame duplication, insertion, deletion within the selected range or retiming was introduced to manufacture a defect.
+We analyzed the **first 66 frames** of a separate clip as `hold-original.mp4`, preserving the source frame numbers and timing.
 
 - **66 frames at 24fps**, with a **2.75-second video timeline**
 - **1920×1080, HEVC Main 10 / yuv420p10le and BT.709** retained
