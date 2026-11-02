@@ -12,7 +12,8 @@ Windows에서 216개 중 214개가 통과했습니다. 2개는 테스트 환경�
 
 | Source / 원본 | Result / 결과 |
 | --- | --- |
-| Video Edit · source 66 frames, edit 63 frames | The packaged CLI identified the three deliberately removed source frames (20, 21, 45). NVIDIA HIGH restored all three on the 66-frame, 24 fps timeline at the edit resolution of 1280×640. / 배포 CLI가 의도적으로 뺀 원본 20·21·45번을 찾아냈고, NVIDIA HIGH 보간 결과는 편집본 해상도 1280×640, 원본 길이 66프레임·24fps였습니다. |
+| Video Edit · FrameMatch car shot | With no manual pins, the packaged CLI matched the 252-frame original against the 249-frame ProRes edit and flagged 18 source positions as missing and one as an image hold. / 수동 지정 없이 배포 CLI로 자동차 원본 252프레임과 ProRes 편집본 249프레임을 비교해 누락 후보 18개와 이미지 홀드 1개를 확인했습니다. |
+| Video Edit · exported car demo | With source range 94–98 set manually, the render generated 21 frames in total. Edit frames 93 and 97 supply frames 95–97 at ¼, ½ and ¾. The full export contains 252 frames at 24 fps in 1920×1080 ProRes 422 HQ. / 원본 94–98 구간을 직접 지정한 결과 총 21장을 생성했습니다. 95–97번은 편집본 93·97 사이의 ¼·½·¾ 시점입니다. 전체 출력은 1920×1080 ProRes 422 HQ, 252프레임·24fps입니다. |
 | ProRes HQ MOV / 4:2:2 10-bit | Codec/profile/pixel format, frame count/FPS and audio retained / 형식·프레임·오디오 유지 |
 | ProRes4444 MOV / decoded4:4:4 12-bit | Matching encoded properties; interpolation remains RGB10A2 / 출력 속성 유지, 보간은 RGB10A2 |
 | H.264 High MP4 | Matching source properties / 원본 형식 유지 |

@@ -8,9 +8,9 @@ Frame Hold Finder는 Windows에서 영상의 시간축을 분석하고 보정합
 
 ## 1.1 추가 기능 · Video Edit 원본 비교
 
-기준 원본이 있으면 편집본에서 어느 프레임이 빠졌는지 찾아 원본 타이밍에 맞출 수 있습니다. 아래 예시는 66장짜리 영상에서 20·21·45번을 의도적으로 뺀 편집본입니다. 앱이 세 위치를 찾고 NVIDIA 보간으로 63장을 다시 66장으로 맞췄습니다. 비교 영상에서 새로 생성한 프레임은 오른쪽 화면의 주황색 테두리로 표시됩니다.
+아래는 FrameMatch에서 사용했던 자동차 샷입니다. 빨간 컨버터블 원본은 252프레임, 노란 쿠페 편집본은 249프레임입니다. 원본 94번과 98번에 맞는 편집본 93번과 97번을 양끝으로 잡고, 원본 타임라인의 95·96·97번을 생성했습니다. 결과는 편집본의 ProRes 포맷으로 원본의 252프레임·24fps 타이밍을 따릅니다.
 
-[![원본 타임라인에서 누락 프레임을 찾고 보간 전후를 비교하는 영상](docs/images/video-edit-comparison.gif)](docs/media/video-edit-comparison.mp4)
+[![자동차 원본과 편집본의 프레임 매치 및 보간 전후 비교](docs/images/video-edit-comparison.gif)](docs/media/video-edit-comparison.mp4)
 
 [전체 비교 영상](docs/media/video-edit-comparison.mp4) · [따라 해 볼 예시 파일](https://github.com/tardis7732/FrameHoldFinder/releases/download/v1.1/FrameHoldFinder-v1.1-Examples.zip)
 

@@ -8,9 +8,9 @@ Frame Hold Finder analyzes and corrects video timing on Windows. Choose **Single
 
 ## New in 1.1 · Video Edit reference matching
 
-Use an original shot to find gaps in an edit and restore its timing. In this example, we deliberately removed frames 20, 21 and 45 from a 66-frame clip. The app located all three and used NVIDIA interpolation to bring the 63-frame edit back to 66 frames. An orange border flashes on the right whenever a generated frame appears.
+This is the car shot from FrameMatch. The red convertible in the original runs for 252 frames. The edit turns it into a yellow coupe and runs for 249 frames. Source frames 94 and 98 match edit frames 93 and 97. We used those two edited images to generate source frames 95, 96 and 97. The result keeps the edit’s ProRes format and plays on the original 252-frame timeline at 24 fps.
 
-[![Find missing frames on the source timeline and compare the edit before and after interpolation](docs/images/video-edit-comparison.gif)](docs/media/video-edit-comparison.mp4)
+[![Match the original car shot to its edit and compare frames before and after interpolation](docs/images/video-edit-comparison.gif)](docs/media/video-edit-comparison.mp4)
 
 [Watch the comparison](docs/media/video-edit-comparison.mp4) · [Download the sample clips](https://github.com/tardis7732/FrameHoldFinder/releases/download/v1.1/FrameHoldFinder-v1.1-Examples.zip)
 

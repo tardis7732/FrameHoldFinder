@@ -40,6 +40,6 @@ NVIDIA VFX·CUDA·GPU 드라이버와 모델·런타임 패키지는 이 저장�
 
 ## Demo media / 데모 미디어
 
-The example is an excerpt from the author's existing Higgsfield/Seedance generation, used to demonstrate analysis and correction. Account tokens, generation prompts and private source URLs are not included. Preview media is for demonstrating this project; it carries no separate open-content license.
+The single-clip examples use excerpts from the author's Higgsfield/Seedance footage. The Video Edit example uses the original and edited car shot previously published with FrameMatch for Nuke. These clips are provided to demonstrate the software and carry no separate open-content license. [FrameMatch sample media](https://github.com/tardis7732/FrameMatch-for-Nuke/releases/tag/v1.0.0)
 
-예시는 작성자의 기존 Higgsfield/Seedance 생성 영상 일부로, 분석과 보정을 설명하기 위해 사용합니다. 계정 토큰·생성 프롬프트·비공개 원본 URL은 포함하지 않습니다. 데모 미디어에는 별도의 자유 콘텐츠 라이선스를 부여하지 않습니다.
+단일 영상 예시는 작성자의 Higgsfield/Seedance 영상 일부를 사용합니다. Video Edit 예시는 FrameMatch for Nuke에 공개했던 자동차 원본과 편집본을 사용합니다. 데모 영상은 소프트웨어의 동작을 보여주기 위해 제공하며 별도의 자유 콘텐츠 라이선스를 부여하지 않습니다. [FrameMatch 예시 영상](https://github.com/tardis7732/FrameMatch-for-Nuke/releases/tag/v1.0.0)
