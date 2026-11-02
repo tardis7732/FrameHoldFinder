@@ -8,7 +8,7 @@ Frame Hold Finder analyzes and corrects video timing on Windows. Choose **Single
 
 ## New in 1.1 · Video Edit reference matching
 
-This is the car shot from FrameMatch. The red convertible in the original runs for 252 frames. The edit turns it into a yellow coupe and runs for 249 frames. Source frames 94 and 98 match edit frames 93 and 97. We used those two edited images to generate source frames 95, 96 and 97. The result keeps the edit’s ProRes format and plays on the original 252-frame timeline at 24 fps.
+In this FrameMatch car shot, the original red convertible runs for 252 frames and the edited yellow coupe runs for 249. With the default settings, the matcher flagged 18 possible missing frames and one image hold on the source timeline. We rendered the automatic plan at `LOW` quality, interpolating those 19 frames. The result retains the edit’s ProRes 422 HQ format and follows the original 252-frame timeline at 24 fps.
 
 [![Match the original car shot to its edit and compare frames before and after interpolation](docs/images/video-edit-comparison.gif)](docs/media/video-edit-comparison.mp4)
 
@@ -108,9 +108,9 @@ Use keys returned by `analyze`, such as `--exclude jump:3:4`, to exclude candida
 
 ## Video Edit · Reference Match
 
-![Frame match at source frame 96 with the original red convertible and the corrected yellow coupe side by side](docs/images/video-edit-frame-match.png)
+![Original red convertible and automatically interpolated yellow coupe at source frame 97](docs/images/video-edit-frame-match.png)
 
-At source frame 96, the left viewer shows the original and the right viewer shows the corrected edit. The selected row shows that frame 96 was generated halfway between edit frames 93 and 97.
+At source frame 97, the left viewer shows the original. The right viewer shows the image generated halfway between edit frames 96 and 97 by the automatic plan. The selected row identifies both reference frames.
 
 Select a forward-playing shot and its edit with the same framing. For comparison, the app aligns their display widths and vertical centers. It compares image tiles to match frames in temporal order using the timing algorithm adapted from FrameMatch for Nuke. [FrameMatch for Nuke](https://github.com/tardis7732/FrameMatch-for-Nuke/blob/b3fcfff/src/matcher.cpp)
 
@@ -119,11 +119,11 @@ The frame table opens with all source frames in one scrollable list. Both clips 
 - **Matched, Review or Manual match** — use the mapped edited image. For example, if original frame 155 maps to edited frame 153, output frame 155 uses edited frame 153.
 - **Missing or Image hold** — when the gap has a distinct edited reference on each side, the NVIDIA SDK generates frames at equal intervals between them. A two-frame gap produces one frame one-third of the way between the references and another two-thirds of the way through. When both references cannot be established, the output uses the edited frame listed for that row.
 
-After analysis, select two source rows whose edit images match and interpolate the frames between them. For example, suppose source frame 94 matches edit frame 93 and source frame 98 matches edit frame 97.
+#### Optional manual ranges
 
-1. Select source frame 94 in the table and choose `Add range…`.
-2. Select source frame 98. The range shows edit frames 93 and 97 as the references and source frames 95–97 as the three output positions. You can also select frame 98 first.
-3. Choose `Apply range`. On preview or export, source frames 95, 96 and 97 use images generated one-quarter, one-half and three-quarters of the way between the two references.
+1. After matching, find two source rows whose edit images you trust. Select either row and choose `Add range…`.
+2. Select the other source row. Check the two edited reference frames and the source positions that will be filled between them.
+3. Choose `Apply range`. Preview or export to fill the range with images generated at equal intervals between the two references.
 
 To enter the edit frame numbers directly, choose `Enter edit numbers…` from `Add range…`. If an edit frame has several possible source positions, choose the position to use. To undo an added range, select one of its `Added` rows and choose `Remove added range`.
 
