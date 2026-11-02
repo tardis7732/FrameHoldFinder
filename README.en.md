@@ -108,6 +108,10 @@ Use keys returned by `analyze`, such as `--exclude jump:3:4`, to exclude candida
 
 ## Video Edit · Reference Match
 
+![Frame match at source frame 96 with the original red convertible and the corrected yellow coupe side by side](docs/images/video-edit-frame-match.png)
+
+At source frame 96, the left viewer shows the original and the right viewer shows the corrected edit. The selected row shows that frame 96 was generated halfway between edit frames 93 and 97.
+
 Select a forward-playing shot and its edit with the same framing. For comparison, the app aligns their display widths and vertical centers. It compares image tiles to match frames in temporal order using the timing algorithm adapted from FrameMatch for Nuke. [FrameMatch for Nuke](https://github.com/tardis7732/FrameMatch-for-Nuke/blob/b3fcfff/src/matcher.cpp)
 
 The frame table opens with all source frames in one scrollable list. Both clips use frame numbers starting at 1. Select a row to compare the two images and see how that source frame will be filled on export. Collapse the table to give the graph more room.
