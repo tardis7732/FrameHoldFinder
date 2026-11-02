@@ -46,7 +46,7 @@ Speed excess at the two jump intervals falls from **89.257% to 0%** and **104.83
 
 ## Reproduce
 
-The `hold-original.mp4` in **FrameHoldFinder-v1.0-Examples.zip** is already trimmed to the first 66 frames.
+The `hold-original.mp4` in **FrameHoldFinder-v1.1-Examples.zip** is already trimmed to the first 66 frames.
 
 ```powershell
 .\FrameHoldFinder-CLI.exe analyze "examples\hold-original.mp4" --threshold 37.1

@@ -12,8 +12,11 @@ _variables = weakref.WeakSet()
 _originals = {}
 
 _CATALOG = r'''
-Frame Hold Finder · 모션 분석 1.0||Frame Hold Finder · Motion Analysis 1.0
+단일 영상 · 홀드 / 점프||Single Clip · Holds / Jumps
+Video Edit · 원본 비교||Video Edit · Reference Match
+Frame Hold Finder · 모션 분석 1.1||Frame Hold Finder · Motion Analysis 1.1
 영상 선택||Open Video
+분석 영상 선택||Select Video
 분석 시작||Analyze
 재분석||Reanalyze
 취소||Cancel
@@ -24,12 +27,45 @@ Frame Hold Finder · 모션 분석 1.0||Frame Hold Finder · Motion Analysis 1.0
 변경 즉시 적용됩니다.||Changes apply immediately.
 SDK 설정…||SDK Setup…
 SDK 설정||SDK Setup
+렌더 품질||Render Quality
+낮을수록 움직이는 윤곽이 모션 블러처럼 뭉개져 보일 수 있습니다.\n높을수록 윤곽은 선명해지지만, 보간 오류도 더 눈에 띌 수 있습니다.||Lower settings can soften moving edges like motion blur.\nHigher settings give sharper edges, but interpolation artifacts may stand out more.
+렌더 품질을 저장하지 못했습니다.||Could not save the render quality.
+품질이 변경되었습니다. 미리보기를 다시 렌더하세요.||Quality changed. Render a new preview.
 최근 결과 열기||Open Last Result
 결과 폴더 열기||Open Output Folder
 파일 경로 복사||Copy File Path
+원본 경로 복사||Copy Source Path
+편집본 경로 복사||Copy Edit Path
+대응표 JSON 저장…||Export Frame Map (JSON)…
 제외 초기화||Reset Exclusions
 기준 초기화||Reset Thresholds
 감지 도움말||Detection Help
+원본 비교 가이드||Video Edit Guide
+설정 초기화||Reset Settings
+대응 수정||Adjust Matches
+비교와 저장||Compare and Save
+▲ 누락 후보||▲ Missing candidate
+프레임 대응표||Frame correspondence
+원본 프레임||Source frame
+매치 프레임 지정||Set frame match
+사용 프레임 변경||Change frame used
+원본 타이밍으로 저장||Save on Source Timeline
+차이 보기||Difference
+미리보기 렌더||Render preview
+보정 전||Before
+보정 후||After
+보정 미리보기 렌더 중…||Rendering corrected preview…
+미리보기 준비 완료||Preview ready
+가로축은 원본 프레임 번호이고 세로축은 매치 신뢰도입니다. 그래프를 클릭하면 그 프레임의 영상과 대응 행으로 이동합니다.||The horizontal axis shows source frame numbers. The vertical axis shows match confidence. Click a frame on the graph to see its image and row.
+호박색 띠와 삼각형은 편집본에 대응 프레임이 없는 원본 위치입니다. 분홍 띠는 편집본의 이미지 홀드, 주황 점은 확인할 대응입니다.||Amber bands and triangles mark source frames with no matching edit frame. Pink bands mark image holds in the edit. Orange dots mark matches for review.
+표 제목을 눌러 접거나 펼칩니다. 전체 프레임을 스크롤하거나 ‘검토 대상만’으로 확인할 행을 좁힐 수 있습니다.||Click the table header to collapse or expand it. Scroll through all source frames or select Issues only to narrow the list.
+원본 행을 선택하고 편집본을 앞뒤로 움직여 같은 순간을 찾습니다. ‘이 쌍으로 지정’을 누르면 이 쌍을 기준으로 대응을 다시 계산합니다.||Select a source row and step through the edit to find the same moment. Choose Pin this pair to recalculate the matches around that pair.
+양끝이 맞는 원본 행 두 개를 선택합니다. 예를 들어 94번과 98번을 기준으로 적용하면, 두 행에 대응하는 편집본으로 원본 95~97번을 채웁니다.||Choose two trusted source rows as endpoints. For example, choosing 94 and 98 fills source frames 95–97 using the edit images matched to those endpoints.
+선택한 원본 한 장에 쓸 편집 프레임을 직접 고릅니다. 표의 ‘저장 방식’에서 사용할 프레임이나 보간 위치를 확인할 수 있습니다.||Choose the edit image to use for a single source row. The On export column shows the edit frame or interpolation position used for each output.
+분석과 차이 보기는 두 영상의 가로폭과 세로 중심을 맞춥니다. 겹치는 영역의 RGB 차이를 표시하며, ‘차이 강도’로 작은 차이를 밝게 볼 수 있습니다.||Matching and Difference align both clips by width and vertical center. The viewer shows RGB differences in the shared area. Increase Difference gain to see small changes.
+현재 대응표대로 보정본을 만든 뒤 ‘보정 전’과 ‘보정 후’를 전환해 같은 원본 위치에서 비교합니다.||Render the current frame plan, then switch between Before and After to compare the results at the same source frame.
+편집본 이미지로 원본의 프레임 수와 FPS에 맞춰 저장합니다. 오디오는 원본에서 가져옵니다.||Save the edit images with the source frame count, frame rate and audio.
+나란히 보기, 보정 전, 차이 끔·1×, 전체 대응표와 그래프 기본 범위, 플레이어 기본 높이로 돌아갑니다.||Restore side-by-side viewing, Before, Difference off at 1×, all table rows, the full graph and the default player height.
 전체 설정||General
 홀드 설정||Hold Detection
 점프 설정||Jump Detection
@@ -46,7 +82,6 @@ SDK 설정||SDK Setup
 개 이상|| points or more
  px 이하|| px or less
 보정 영상 저장||Save Corrected Video
-품질||Quality
 NVIDIA SDK 확인 중…||Checking NVIDIA SDK…
 검출 구간||Detected Ranges
 추가||Add
@@ -114,7 +149,7 @@ SDK 환경 확인 필요||SDK setup required
 먼저 영상을 선택하세요.||Open a video first.
 영상이 변경됐습니다. 추가 창을 다시 열어주세요.||The video has changed. Reopen Add Range.
 검토할 영상을 선택하세요.||Choose a video to review.
-영상 선택 · Ctrl+O||Open video · Ctrl+O
+분석 영상 선택 · Ctrl+O||Select video · Ctrl+O
 모션 분석 시작 · Ctrl+Enter||Analyze motion · Ctrl+Enter
 같은 점의 앞뒤 이동량보다 모두 이 비율 이상 빨라야 점프 후보입니다.||A point must exceed both adjacent motion intervals by this percentage to count toward a jump.
 포함된 교체 대상을 저장합니다. 원본 프레임 수·FPS·길이를 유지하고 오디오를 복사합니다. NVIDIA SDK가 필요합니다.||Render included ranges. Preserves the source frame count and FPS, and copies audio. Requires NVIDIA SDK.

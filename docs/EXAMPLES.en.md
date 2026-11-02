@@ -40,7 +40,7 @@ After correction, speed excess at the 11 original candidate intervals ranges fro
 
 ## Reproduce
 
-Extract **FrameHoldFinder-v1.0-Examples.zip** from the release. Its `examples` folder contains `jump-original.mp4`, `jump-corrected.mp4` and the comparison. The source file is already trimmed to the selected 111–144 range.
+Extract **FrameHoldFinder-v1.1-Examples.zip** from the release. Its `examples` folder contains `jump-original.mp4`, `jump-corrected.mp4` and the comparison. The source file is already trimmed to the selected 111–144 range.
 
 ```powershell
 .\FrameHoldFinder-CLI.exe analyze "examples\jump-original.mp4" --threshold 37.1

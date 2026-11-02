@@ -29,6 +29,16 @@
 
 ## Options
 
+Use `match ORIGINAL EDITED` for reference timing analysis. JSON includes 1-based correspondences in both directions. Add `-o` to render edited imagery on the original timeline with original audio.
+
+```powershell
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov --report match.json
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov -o matched.mov
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov --anchor 12:11 --anchor 38:36 -o pinned.mov
+```
+
+### Single-clip options
+
 | Option | Default / behavior |
 | --- | --- |
 | `--width` | 960, capped at source width |

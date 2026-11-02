@@ -179,7 +179,7 @@ class CLITests(unittest.TestCase):
         process=subprocess.run([sys.executable,'-c',
             "import cli,sys; assert 'tkinter' not in sys.modules; assert 'motion_app' not in sys.modules; print(cli.VERSION)"],
             cwd=Path(cli.__file__).parent,capture_output=True,text=True)
-        self.assertEqual(process.returncode,0,process.stderr); self.assertEqual(process.stdout.strip(),'1.0')
+        self.assertEqual(process.returncode,0,process.stderr); self.assertEqual(process.stdout.strip(),'1.1')
 
 
 if __name__=='__main__':

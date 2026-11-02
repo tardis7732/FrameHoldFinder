@@ -28,7 +28,7 @@ def binary(name):
 
 def probe(path):
     p = subprocess.run([binary('ffprobe'), '-v', 'error', '-select_streams', 'v:0',
-        '-show_entries', 'stream=width,height,avg_frame_rate,r_frame_rate,nb_frames,color_transfer:format=duration',
+        '-show_entries', 'stream=width,height,sample_aspect_ratio,avg_frame_rate,r_frame_rate,nb_frames,color_transfer:format=duration',
         '-of', 'json', str(path)], capture_output=True, creationflags=FLAGS)
     if p.returncode:
         raise RuntimeError(p.stderr.decode('utf-8', 'replace')[-1500:])
@@ -44,6 +44,7 @@ def probe(path):
         raise ValueError('프레임 속도를 읽지 못했습니다.')
     duration = float(data.get('format', {}).get('duration', 0))
     return dict(width=int(s['width']), height=int(s['height']), fps=fps,
+        sample_aspect_ratio=s.get('sample_aspect_ratio', '1:1'),
         fps_fraction=s.get('avg_frame_rate') if rate(s.get('avg_frame_rate','0/1')) else s.get('r_frame_rate'),
         estimated=int(s.get('nb_frames', 0) or 0) if str(s.get('nb_frames','')).isdigit() else round(duration*fps),
         transfer=s.get('color_transfer', 'unknown'))

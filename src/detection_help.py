@@ -4,7 +4,7 @@ import tkinter as tk
 from i18n import tr, DisplayVar
 from tkinter import ttk
 
-from ui_support import PALETTE, remove_dotted_focus
+from ui_support import PALETTE, make_help_notebook
 
 
 SEMANTIC = {
@@ -38,17 +38,6 @@ class DetectionHelp(tk.Toplevel):
         self.bind('<Escape>', self._close)
         self._fit_window(parent)
 
-        style = ttk.Style(self)
-        style.configure('DetectionHelp.TNotebook', background=PALETTE['surface'], borderwidth=0)
-        style.configure('DetectionHelp.TNotebook.Tab', padding=(14, 7))
-        style.map('DetectionHelp.TNotebook.Tab',
-                  background=[('selected', 'focus', PALETTE['primary_hover']),
-                              ('selected', PALETTE['primary']), ('active', PALETTE['hover']),
-                              ('!selected', PALETTE['subtle'])],
-                  foreground=[('selected', PALETTE['primary_fg']), ('!selected', PALETTE['muted'])],
-                  bordercolor=[('selected', 'focus', PALETTE['primary_pressed']),
-                               ('selected', PALETTE['primary']), ('!selected', PALETTE['border'])])
-        remove_dotted_focus(style, 'DetectionHelp.TNotebook.Tab', padding=(14, 7), focus_padding=1)
         body = ttk.Frame(self, padding=(18, 12), style='Surface.TFrame')
         body.pack(fill='both', expand=True)
         ttk.Label(body, text=tr('감지 도움말'), style='Surface.TLabel',
@@ -58,7 +47,7 @@ class DetectionHelp(tk.Toplevel):
         self.close_button = ttk.Button(footer, text=tr('닫기'), command=self.destroy, style='Compact.TButton')
         self.close_button.pack(side='right')
 
-        self.notebook = ttk.Notebook(body, style='DetectionHelp.TNotebook')
+        self.notebook = make_help_notebook(body)
         self.notebook.pack(fill='both', expand=True)
         self.settings_tab = ttk.Frame(self.notebook, padding=(12, 12), style='Surface.TFrame')
         self.graph_tab = ttk.Frame(self.notebook, padding=(12, 12), style='Surface.TFrame')

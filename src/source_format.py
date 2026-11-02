@@ -21,11 +21,31 @@ H264_PROFILES = {'Constrained Baseline':'baseline','Baseline':'baseline','Main':
 HEVC_PROFILES = {'Main':'main','Main 10':'main10'}
 
 
-def probe_format(ffprobe, path, *, count_frames=False):
+def probe_json(args, cancelled=None):
+    """FFprobe may decode an entire output for verification; allow cancellation."""
+    with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=FLAGS) as process:
+        try:
+            while True:
+                if cancelled and cancelled():
+                    raise InterruptedError('보간이 취소됐습니다.')
+                try:
+                    data, errors = process.communicate(timeout=.25 if cancelled else None)
+                    break
+                except subprocess.TimeoutExpired:
+                    continue
+            if process.returncode:
+                raise RuntimeError(errors.decode('utf-8','replace')[-1200:] or 'FFprobe failed.')
+            return json.loads(data)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.communicate()
+
+
+def probe_format(ffprobe, path, *, count_frames=False, cancelled=None):
     args=[str(ffprobe),'-v','error','-show_streams','-show_format','-of','json']
     if count_frames:args += ['-count_frames']
-    result=subprocess.run(args+[str(path)],capture_output=True,creationflags=FLAGS,check=True)
-    return json.loads(result.stdout)
+    return probe_json(args+[str(path)],cancelled)
 
 
 def video_stream(info):

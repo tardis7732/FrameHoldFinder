@@ -46,7 +46,7 @@
 
 ## 재현
 
-릴리스의 **FrameHoldFinder-v1.0-Examples.zip**에 포함된 `hold-original.mp4`는 이미 처음 66프레임으로 잘라낸 파일입니다.
+릴리스의 **FrameHoldFinder-v1.1-Examples.zip**에 포함된 `hold-original.mp4`는 이미 처음 66프레임으로 잘라낸 파일입니다.
 
 ```powershell
 .\FrameHoldFinder-CLI.exe analyze "examples\hold-original.mp4" --threshold 37.1

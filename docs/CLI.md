@@ -29,6 +29,16 @@ Windows 패키지의 `FrameHoldFinder-CLI.exe`는 GUI를 열지 않습니다. �
 
 ## 옵션
 
+원본과 편집본의 타이밍을 비교하려면 `match`에 원본, 편집본 순서로 전달합니다. JSON은 양방향 1-based 대응을 포함합니다. `-o`를 주면 원본 타임라인과 오디오를 사용해 편집본 형식으로 저장합니다.
+
+```powershell
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov --report match.json
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov -o matched.mov
+.\FrameHoldFinder-CLI.exe match original.mp4 edited.mov --anchor 12:11 --anchor 38:36 -o pinned.mov
+```
+
+### 단일 영상 옵션
+
 | 옵션 | 기본값 / 동작 |
 | --- | --- |
 | `--width` | 960, 원본 폭 이하로 제한 |

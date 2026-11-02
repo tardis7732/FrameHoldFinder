@@ -1,19 +1,18 @@
 # Validation / 검증
 
-Public release: **1.0**, 2026-10-29. Local development iteration numbers are not public release versions.
-
-공개 버전은 **1.0**입니다. 이전 로컬 개발 번호는 공개 릴리스 번호와 별개입니다.
+Frame Hold Finder 1.1 · 2026-11-02
 
 ## Automated tests / 자동 테스트
 
-133 tests: **131 passed, 2 skipped** on Windows. The skipped cases require symbolic-link privileges unavailable in the test environment. Coverage includes motion criteria, manual ranges and reference protection, exclusion handling, graph viewport navigation, language translations, CLI validation, safe report paths and source-format planning.
+Of 216 tests on Windows, 214 passed and 2 were skipped because they require symbolic-link privileges. Coverage includes single-clip correction, reference matching, difference views, manual frame overrides, previews, render quality and CLI exports.
 
-Windows에서 133개 중 **131개 통과, 2개 생략**했습니다. 생략한 항목은 환경의 심볼릭 링크 권한이 필요한 경우입니다. 모션 기준·수동 구간/참조 보호·제외·그래프 탐색·번역·CLI·보고서 경로·원본 포맷 계획을 검증했습니다.
+Windows에서 216개 중 214개가 통과했습니다. 2개는 테스트 환경에 심볼릭 링크 권한이 없어 생략됐습니다. 단일 영상 보정, 원본 프레임 매치, 차이 보기, 수동 프레임 지정, 미리보기, 렌더 품질, CLI 저장 등을 확인했습니다.
 
 ## Actual GPU renders / 실제 GPU 렌더
 
 | Source / 원본 | Result / 결과 |
 | --- | --- |
+| Video Edit · source 66 frames, edit 63 frames | The packaged CLI identified the three deliberately removed source frames (20, 21, 45). NVIDIA HIGH restored all three on the 66-frame, 24 fps timeline at the edit resolution of 1280×640. / 배포 CLI가 의도적으로 뺀 원본 20·21·45번을 찾아냈고, NVIDIA HIGH 보간 결과는 편집본 해상도 1280×640, 원본 길이 66프레임·24fps였습니다. |
 | ProRes HQ MOV / 4:2:2 10-bit | Codec/profile/pixel format, frame count/FPS and audio retained / 형식·프레임·오디오 유지 |
 | ProRes4444 MOV / decoded4:4:4 12-bit | Matching encoded properties; interpolation remains RGB10A2 / 출력 속성 유지, 보간은 RGB10A2 |
 | H.264 High MP4 | Matching source properties / 원본 형식 유지 |

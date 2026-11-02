@@ -40,7 +40,7 @@
 
 ## 재현
 
-릴리스의 **FrameHoldFinder-v1.0-Examples.zip**을 풀면 `examples` 폴더에 `jump-original.mp4`, `jump-corrected.mp4`, 비교 영상이 있습니다. 원본은 이미 111–144 구간으로 잘라낸 파일입니다.
+릴리스의 **FrameHoldFinder-v1.1-Examples.zip**을 풀면 `examples` 폴더에 `jump-original.mp4`, `jump-corrected.mp4`, 비교 영상이 있습니다. 원본은 이미 111–144 구간으로 잘라낸 파일입니다.
 
 ```powershell
 .\FrameHoldFinder-CLI.exe analyze "examples\jump-original.mp4" --threshold 37.1

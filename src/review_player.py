@@ -1,4 +1,4 @@
-"""Bounded, silent source-video review with frame-accurate navigation.
+"""Bounded, silent video review with frame-accurate navigation.
 
 FFmpeg seeks by decoded frame index, not rounded timestamps. A seek may decode
 the earlier part of a long source, but it never loads that part into RAM and is
@@ -126,6 +126,7 @@ class ReviewPlayer:
     def __init__(self,parent,analysis=None,on_frame=None,embedded=False,show_plot=True):
         self.analysis=None;self.on_frame=on_frame;self.embedded=bool(embedded);self.show_plot=bool(show_plot)
         self.path='';self.frames=0;self.fps=24.;self.source_width=960;self.source_height=540
+        self.preview_path = None
         self.width=960;self.height=540
         self.cache=OrderedDict();self.decoder=None;self.received=0
         self.current_frame=0;self.playing=False;self.closed=False;self.pending_frame=None
@@ -282,7 +283,8 @@ class ReviewPlayer:
 
     def clear(self):
         if not self.is_open():return
-        if self.decoder is not None:self.decoder.stop();self.decoder=None
+        self._stop_decoder()
+        self.preview_path = None
         if self.scrub_id:
             self.window.after_cancel(self.scrub_id);self.scrub_id=None
         self.playing=False;self.pending_frame=None;self.current_frame=0;self.received=0
@@ -313,7 +315,8 @@ class ReviewPlayer:
     def _cleanup(self):
         if self.closed:return
         self.closed=True;self.playing=False
-        if self.decoder is not None:self.decoder.stop();self.decoder=None
+        self._stop_decoder()
+        self.preview_path = None
         for task in (self.after_id,self.scrub_id):
             if task:
                 try:self.window.after_cancel(task)
@@ -327,9 +330,32 @@ class ReviewPlayer:
             self.ruler_trace=None
         self.cache.clear();self.current_bytes=None;self.photo=None
 
+    def set_preview_path(self, path):
+        """Switch pictures on the source timeline. None selects the original clip."""
+        path = str(path) if path is not None else None
+        if not self.is_open() or self.analysis is None or path == self.preview_path:
+            return
+        frame = self.pending_frame or max(1, self.current_frame)
+        self._stop_decoder()
+        self.preview_path = path
+        self.cache.clear()
+        self.current_bytes = self.photo = None
+        self.screen.configure(image='', text='')
+        self.vector_check.state(['disabled' if path is not None else '!disabled'])
+        self.seek(frame, play=self.playing)
+
+    def _stop_decoder(self):
+        if self.decoder is None:
+            return
+        self.decoder.stop()
+        if self.preview_path is not None:
+            # The preview owner can now delete its temporary Windows file.
+            self.decoder.thread.join()
+        self.decoder = None
+
     def _restart(self,frame):
-        if self.decoder is not None:self.decoder.stop()
-        self.decoder=_Decoder(self.path,frame,self.width,self.height);self.received=frame-1
+        self._stop_decoder()
+        self.decoder=_Decoder(self.preview_path or self.path,frame,self.width,self.height);self.received=frame-1
 
     def _request(self,frame):
         self.pending_frame=frame
@@ -495,7 +521,7 @@ class ReviewPlayer:
     def _redraw(self):
         if not self.is_open() or self.current_bytes is None:return
         image=Image.frombytes('RGB',(self.width,self.height),self.current_bytes)
-        if self.vectors.get() and self.current_frame>=1:
+        if self.preview_path is None and self.vectors.get() and self.current_frame>=1:
             # Frame 1 has no incoming step: preview 1→2 at its source points.
             # All later frames retain their existing previous→current mapping.
             steps=self.analysis.get('steps',[]);index=max(0,self.current_frame-2)

@@ -2,7 +2,9 @@
 import math
 import tkinter as tk
 from i18n import tr, DisplayVar
-from tkinter import ttk
+from tkinter import messagebox, ttk
+
+import sdk_bridge
 
 
 PALETTE = {
@@ -15,9 +17,76 @@ PALETTE = {
     'button_secondary': '#334155', 'button_secondary_fg': '#ffffff',
     'button_secondary_hover': '#475569', 'button_secondary_pressed': '#1e293b',
     'button_neutral': '#e4e4e7', 'button_neutral_hover': '#d4d4d8', 'button_neutral_pressed': '#c4c4cc',
+    'field_selection': '#d4d4d8',
     'button_border': '#71717a', 'button_hover_border': '#62626b', 'excluded': '#71717a',
     'scroll_thumb': '#d7d7d7', 'scroll_hover': '#bcbcbc', 'tooltip_bg': '#363636', 'tooltip_fg': '#ffffff',
 }
+
+
+def make_render_quality_control(parent, get_quality, on_change):
+    row = ttk.Frame(parent, style='Surface.TFrame')
+    label = ttk.Label(row, text=tr('렌더 품질'), style='Muted.TLabel')
+    label.pack(side='left', padx=(0, 4))
+    box = ttk.Combobox(row, state='readonly', width=8, values=sdk_bridge.RENDER_QUALITIES)
+    box.pack(side='left')
+    box.set(get_quality())
+    hint = ('낮을수록 움직이는 윤곽이 모션 블러처럼 뭉개져 보일 수 있습니다.\n'
+            '높을수록 윤곽은 선명해지지만, 보간 오류도 더 눈에 띌 수 있습니다.')
+    attach_tooltip(label, hint)
+    attach_tooltip(box, hint)
+
+    def select(_event):
+        quality = box.get()
+        if box.instate(['disabled']):
+            box.set(get_quality())
+            return
+        if quality == get_quality():
+            return
+        try:
+            sdk_bridge.save_quality(quality)
+        except (OSError, ValueError) as error:
+            box.set(get_quality())
+            messagebox.showerror(tr('렌더 품질을 저장하지 못했습니다.'), str(error), parent=row)
+            return
+        on_change(quality)
+
+    box.bind('<<ComboboxSelected>>', select)
+    return row, box
+
+
+def make_tools_menu(parent, groups, *, postcommand=None):
+    """Build the More button and its grouped, mode-specific actions."""
+    button = ttk.Menubutton(parent, text=tr('더보기'), style='Tools.TMenubutton')
+    menu = tk.Menu(button, tearoff=False, postcommand=postcommand)
+    button.configure(menu=menu)
+    indices = {}
+    for group in groups:
+        if not group:
+            continue
+        if indices:
+            menu.add_separator()
+        for key, label, command in group:
+            menu.add_command(label=tr(label), command=command,
+                             state='normal' if command is not None else 'disabled')
+            indices[key] = menu.index('end')
+    return button, menu, indices
+
+
+def show_task_cancel(analyze_button, cancel_button, busy, stopping):
+    """Show one of two actions which the caller gridded into the same cell."""
+    visible, hidden = (cancel_button, analyze_button) if busy else (analyze_button, cancel_button)
+    width = max(analyze_button.winfo_reqwidth(), cancel_button.winfo_reqwidth())
+    if getattr(analyze_button, '_task_width', None) != width:
+        gridded = visible if visible.winfo_manager() == 'grid' else hidden
+        gridded.master.columnconfigure(gridded.grid_info()['column'], minsize=width)
+        analyze_button._task_width = width
+    cancel_button.state(['!disabled' if busy and not stopping else 'disabled'])
+    if hidden.winfo_manager() == 'grid':
+        had_focus = hidden.focus_get() == hidden
+        hidden.grid_remove()
+        visible.grid()
+        if had_focus and not visible.instate(['disabled']):
+            visible.focus_set()
 
 
 def motion_graph_limit(metrics):
@@ -49,10 +118,38 @@ def remove_dotted_focus(style, name, padding, focus_padding=1):
     style.configure(name, padding=tuple(value + focus_padding for value in values), focusthickness=0)
 
 
+def make_help_notebook(parent):
+    style = ttk.Style(parent)
+    style.configure('DetectionHelp.TNotebook', background=PALETTE['surface'], borderwidth=0)
+    style.configure('DetectionHelp.TNotebook.Tab', padding=(14, 7))
+    style.map('DetectionHelp.TNotebook.Tab',
+              background=[('selected', 'focus', PALETTE['primary_hover']),
+                          ('selected', PALETTE['primary']), ('active', PALETTE['hover']),
+                          ('!selected', PALETTE['subtle'])],
+              foreground=[('selected', PALETTE['primary_fg']), ('!selected', PALETTE['muted'])],
+              bordercolor=[('selected', 'focus', PALETTE['primary_pressed']),
+                           ('selected', PALETTE['primary']), ('!selected', PALETTE['border'])])
+    remove_dotted_focus(style, 'DetectionHelp.TNotebook.Tab', padding=(14, 7), focus_padding=1)
+    return ttk.Notebook(parent, style='DetectionHelp.TNotebook')
+
+
 def apply_design_style(style):
     """Semantic roles adapted from UI/UX Pro Max and shadcn/Radix guidance."""
     p = PALETTE
     style.configure('.', font=('맑은 고딕', 10), background=p['app'], foreground=p['text'])
+    style.configure('Mode.TNotebook', borderwidth=0, background=p['app'])
+    tab_style = 'Mode.TNotebook.Tab'
+    tab_padding = (13, 6)
+    remove_dotted_focus(style, tab_style, padding=tab_padding, focus_padding=0)
+    style.configure(tab_style, width=27, anchor='center', background=p['surface'],
+                    foreground=p['text'], bordercolor=p['border'])
+    tab_fills = [('disabled', p['disabled_bg']), ('selected', p['secondary']),
+                 ('active', p['hover']), ('!selected', p['surface'])]
+    # Clam otherwise overrides the padding only on the selected tab.
+    style.map(tab_style, padding=[('selected', tab_padding), ('!selected', tab_padding)],
+              background=tab_fills, lightcolor=tab_fills, darkcolor=tab_fills,
+              foreground=[('disabled', p['disabled_fg']), ('selected', p['secondary_fg'])],
+              bordercolor=[('focus', p['focus']), ('selected', p['secondary'])])
     style.configure('Surface.TFrame', background=p['surface'])
     style.configure('Surface.TLabel', background=p['surface'], foreground=p['text'])
     style.configure('Muted.TLabel', background=p['surface'], foreground=p['muted'])
@@ -113,15 +210,22 @@ def apply_design_style(style):
             style.configure(name, arrowcolor=foreground)
             style.map(name, arrowcolor=[('disabled', p['disabled_fg']), ('!disabled', foreground)])
         remove_dotted_focus(style, name, padding=padding, focus_padding=2)
+    # The native Tk entry in simpledialog and ttk's popdown list use Tk options.
+    for prefix in ('*Entry.', '*TCombobox*Listbox.'):
+        style.master.option_add(prefix + 'selectBackground', p['field_selection'])
+        style.master.option_add(prefix + 'selectForeground', p['text'])
+    style.master.option_add('*Entry.highlightColor', p['muted'])
     for name in ('TEntry', 'TSpinbox', 'TCombobox'):
         style.configure(name, fieldbackground=p['surface'], background=p['surface'], padding=(6, 4),
                         foreground=p['text'], bordercolor=p['border'], lightcolor=p['surface'],
-                        darkcolor=p['surface'], arrowcolor=p['muted'], arrowsize=11, borderwidth=1)
+                        darkcolor=p['surface'], arrowcolor=p['muted'], arrowsize=11, borderwidth=1,
+                        insertcolor=p['text'])
         style.map(name, fieldbackground=[('disabled', p['disabled_bg']), ('readonly', p['surface'])],
                   foreground=[('disabled', p['disabled_fg'])],
-                  bordercolor=[('focus', p['focus']), ('!focus', p['border'])],
-                  lightcolor=[('focus', p['focus']), ('!focus', p['surface'])],
-                  darkcolor=[('focus', p['focus']), ('!focus', p['surface'])])
+                  selectbackground=[('focus', p['field_selection']), ('!focus', p['track'])],
+                  selectforeground=[('!disabled', p['text'])],
+                  bordercolor=[('disabled', p['disabled_border']), ('focus', p['muted']), ('!focus', p['border'])],
+                  lightcolor=[('!disabled', p['surface'])], darkcolor=[('!disabled', p['surface'])])
     style.configure('Treeview', rowheight=30, background=p['surface'], fieldbackground=p['surface'],
                     foreground=p['text'], borderwidth=0, relief='flat', lightcolor=p['surface'],
                     darkcolor=p['surface'], bordercolor=p['surface'])

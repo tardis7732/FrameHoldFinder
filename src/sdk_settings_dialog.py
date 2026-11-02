@@ -121,8 +121,8 @@ class SDKSettingsDialog(tk.Toplevel):
         text = tk.Text(host, height=height, wrap='char', state='disabled', takefocus=True,
                        font=('맑은 고딕', 9), bg=PALETTE['subtle'], fg=PALETTE['text'],
                        relief='flat', borderwidth=0, padx=9, pady=6,
-                       highlightthickness=1, highlightbackground=PALETTE['border'], highlightcolor=PALETTE['focus'],
-                       selectbackground=PALETTE['primary'], selectforeground=PALETTE['primary_fg'])
+                       highlightthickness=1, highlightbackground=PALETTE['border'], highlightcolor=PALETTE['muted'],
+                       selectbackground=PALETTE['field_selection'], selectforeground=PALETTE['text'])
         scroll = ttk.Scrollbar(host, orient='vertical', command=text.yview)
         text.configure(yscrollcommand=scroll.set)
         text.pack(side='left', fill='x', expand=True)

@@ -9,6 +9,10 @@ import threading
 import time
 
 import hold_core as core
+from report_io import write_report
+
+
+RENDER_QUALITIES = ('HIGH', 'MEDIUM', 'LOW')
 
 
 def app_dir():
@@ -25,12 +29,35 @@ def settings_file():
     return folder/'sdk_settings.json'
 
 
-def _configured_paths():
+def _read_settings(config):
+    try:
+        data = json.loads(config.read_text(encoding='utf-8-sig'))
+    except (FileNotFoundError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _configured_settings():
     for config in (settings_file(),app_dir()/'config'/'sdk_settings.json',app_dir()/'sdk_settings.json'):
         try:
-            value=json.loads(config.read_text(encoding='utf-8-sig'))['python']
-            if isinstance(value,str) and value.strip():yield value
-        except (OSError,ValueError,KeyError,TypeError):pass
+            yield _read_settings(config)
+        except OSError:
+            continue
+
+
+def _configured_paths():
+    for data in _configured_settings():
+        value = data.get('python')
+        if isinstance(value, str) and value.strip():
+            yield value
+
+
+def configured_quality():
+    for data in _configured_settings():
+        value = data.get('quality')
+        if value in RENDER_QUALITIES:
+            return value
+    return 'HIGH'
 
 
 def configured_runtime():
@@ -44,9 +71,25 @@ def runtime():
     return None
 
 
-def save_runtime(path):
+def _save_settings(**changes):
+    if 'quality' in changes and changes['quality'] not in RENDER_QUALITIES:
+        raise ValueError('Unknown render quality.')
+    config = settings_file()
+    data = _read_settings(config)
+    data.update(changes)
+    write_report(config, data)
+
+
+def save_quality(quality):
+    _save_settings(quality=quality)
+
+
+def save_runtime(path, *, quality=None):
     if not Path(path).is_file():raise ValueError('SDK Python 실행 파일이 없습니다.')
-    settings_file().write_text(json.dumps(dict(python=str(path)),ensure_ascii=False),encoding='utf-8')
+    changes = {'python': str(path)}
+    if quality is not None:
+        changes['quality'] = quality
+    _save_settings(**changes)
 
 
 def check(executable=None):
@@ -64,16 +107,37 @@ def check(executable=None):
 
 
 def repair(analysis,candidates,output,quality,progress,cancel,*,format_mode='source'):
-    executable=runtime()
-    if not executable:raise RuntimeError('NVIDIA SDK 환경을 선택해 주세요.')
     metadata=analysis['metadata']
+    request=dict(source=analysis['path'],output=str(output),width=metadata['width'],height=metadata['height'],
+        fps=metadata['fps'],fps_fraction=metadata.get('fps_fraction'),frames=analysis['frames'],runs=candidates,quality=quality,
+        source_stat=analysis.get('source_stat'),preserve_frame_count=True,format_mode=format_mode)
+    return run_render_job(request,progress,cancel)
+
+
+def run_render_job(request, progress, cancel, *, needs_sdk=True):
+    if cancel.is_set():
+        raise core.Cancelled()
+    executable = runtime() if needs_sdk else None
+    if needs_sdk and not executable:
+        raise RuntimeError('NVIDIA SDK 환경을 선택해 주세요.')
     with tempfile.TemporaryDirectory(prefix='FrameHoldFinder-') as folder:
         folder=Path(folder);cancel_file=folder/'cancel';log=folder/'render.log'
-        request=dict(source=analysis['path'],output=str(output),width=metadata['width'],height=metadata['height'],
-            fps=metadata['fps'],fps_fraction=metadata.get('fps_fraction'),frames=analysis['frames'],runs=candidates,quality=quality,
-            source_stat=analysis.get('source_stat'),preserve_frame_count=True,format_mode=format_mode,
-            cancel_file=str(cancel_file),log=str(log),
-            ffmpeg=core.binary('ffmpeg'),ffprobe=core.binary('ffprobe'))
+        request=dict(request, cancel_file=str(cancel_file),log=str(log),
+                     ffmpeg=core.binary('ffmpeg'),ffprobe=core.binary('ffprobe'))
+        if not needs_sdk:
+            from sdk_worker import render
+            def report(event, **values):
+                if event == 'progress':
+                    progress(values['frame'], values['total'])
+            try:
+                return render(request, report=report, cancel_requested=cancel.is_set)
+            except Exception as error:
+                if cancel.is_set():
+                    raise core.Cancelled() from error
+                detail = log.read_text(encoding='utf-8', errors='replace')[-1200:] if log.exists() else ''
+                if detail:
+                    raise RuntimeError(f'{error}\n{detail}') from error
+                raise
         path=folder/'job.json';path.write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
         complete=None;error=None;done=threading.Event()
         with open(folder/'sdk.log','w',encoding='utf-8') as sdklog:
@@ -100,7 +164,7 @@ def repair(analysis,candidates,output,quality,progress,cancel,*,format_mode='sou
                 if p.poll() is None:p.kill()
                 p.wait();p.stdout.close()
         if complete:
-            if complete.get('frames')!=analysis['frames'] or complete.get('delta')!=0:
+            if complete.get('frames')!=request['frames'] or complete.get('delta')!=0:
                 raise RuntimeError('싱크 유지 검증 실패: 출력 프레임 수가 원본과 다릅니다.')
             return complete
         if cancel.is_set():raise core.Cancelled()

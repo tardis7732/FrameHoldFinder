@@ -19,11 +19,14 @@ from sdk_worker import validate_output_paths
 from report_io import validate_report_path, write_report
 from review_player import ReviewPlayer, hold_frame_marks, is_resolved_jump, event_for_frame
 from motion_settings import default_min_move, valid_min_move
-from ui_support import attach_tooltip, apply_design_style, motion_graph_limit, PALETTE
+from ui_support import (attach_tooltip, apply_design_style, make_render_quality_control,
+                        make_tools_menu, motion_graph_limit, show_task_cancel, PALETTE)
 from detection_help import show_detection_help
 from sdk_settings_dialog import show_sdk_settings
 from manual_replacement_dialog import show_manual_replacement
 from graph_viewport import FrameViewport
+from graph_navigation import GraphControls
+from graph_marks import draw_playhead as paint_playhead, draw_stem
 from i18n import load_language, set_language
 from app_settings_dialog import show_app_settings
 
@@ -80,18 +83,28 @@ class App:
         self.excluded=set();self.events=queue.Queue();self.stop=threading.Event()
         self.sdk_ready=False;self.closing=False;self.dragging=False;self.pending=None
         self.sdk_check_generation=0;self.sdk_window=None;self.preferences_window=None
+        self.render_quality=sdk_bridge.configured_quality()
         self.manual_ranges=[];self.manual_window=None
         self.graph_view=FrameViewport();self.graph_panning=False;self.graph_y_max=None
         self.options_pending=None;self.options_valid=True;self.player=None;self.playhead=1;self.last_selected_key=None
         self.media_generation=0;self.media_after=None;self.media_info=None;self.last_output=None
-        root.title(tr('Frame Hold Finder · 모션 분석 1.0'));root.geometry('1440x930');root.minsize(1100,760)
+        self._preview=None;self._preview_plan=();self._preview_input=None
+        root.title('Frame Hold Finder 1.1');root.geometry('1440x930');root.minsize(1100,760)
         root.configure(bg=PALETTE['app']);s=ttk.Style();s.theme_use('clam')
         apply_design_style(s)
         s.configure('Graph.Horizontal.TScrollbar',width=12,arrowsize=12,
             background='#9ca3af',troughcolor=PALETTE['track'],bordercolor=PALETTE['track'],
             lightcolor='#9ca3af',darkcolor='#9ca3af')
         s.map('Graph.Horizontal.TScrollbar',background=[('disabled',PALETTE['track']),('active','#71717a')])
-        body=ttk.Frame(root,padding=12);body.pack(fill='both',expand=True)
+        self.reference_panel = None
+        self.active_mode = 'motion'
+        self.mode_tabs = ttk.Notebook(root, style='Mode.TNotebook')
+        self.mode_tabs.pack(fill='both', expand=True, padx=4, pady=(5, 0))
+        body = ttk.Frame(self.mode_tabs, padding=(8, 7, 8, 8))
+        self.motion_page = body
+        self.reference_page = ttk.Frame(self.mode_tabs)
+        self.mode_tabs.add(body, text=tr('단일 영상 · 홀드 / 점프'))
+        self.mode_tabs.add(self.reference_page, text=tr('Video Edit · 원본 비교'))
 
         source_card=ttk.Frame(body,style='Surface.TFrame',padding=(12,10));source_card.pack(fill='x')
         top=ttk.Frame(source_card,style='Surface.TFrame');top.pack(fill='x')
@@ -100,32 +113,31 @@ class App:
         if self.test_videos:
             self.test_selector=ttk.Combobox(top,textvariable=self.test_choice,values=list(self.test_videos),width=15,state='readonly')
             self.test_selector.pack(side='left',padx=(0,8));self.test_selector.bind('<<ComboboxSelected>>',self.choose_test_video)
-        self.path_entry=ttk.Entry(top,textvariable=self.path,font=('맑은 고딕',10))
-        self.path_entry.pack(side='left',fill='x',expand=True)
+        input_row=ttk.Frame(top,style='Surface.TFrame')
+        input_row.pack(side='left',fill='x',expand=True)
+        input_row.columnconfigure(0,weight=1)
+        self.path_entry=ttk.Entry(input_row,textvariable=self.path,font=('맑은 고딕',10))
+        self.path_entry.grid(row=0,column=0,sticky='nsew')
         self.path_entry.bind('<Return>',self.open_entered_path)
         self.path_entry.bind('<KP_Enter>',self.open_entered_path)
         self.path_entry.bind('<Control-a>',self.select_path)
         self.path_entry.bind('<Control-A>',self.select_path)
-        self.open_button=ttk.Button(top,text=tr('영상 선택'),command=self.choose);self.open_button.pack(side='left',padx=(8,6))
-        self.scan_button=ttk.Button(top,text=tr('분석 시작'),style='Primary.TButton',command=self.start);self.scan_button.pack(side='left')
-        self.cancel_slot=ttk.Frame(top,style='Surface.TFrame',width=54,height=34)
-        self.cancel_slot.pack(side='left',padx=(6,0));self.cancel_slot.pack_propagate(False)
-        self.cancel_button=ttk.Button(self.cancel_slot,text=tr('취소'),command=self.cancel,state='disabled',style='Tertiary.TButton')
-        self.tools_button=ttk.Menubutton(top,text=tr('더보기'),style='Tools.TMenubutton')
+        self.open_button=ttk.Button(input_row,text=tr('분석 영상 선택'),style='Compact.TButton',command=self.choose)
+        self.open_button.grid(row=0,column=1,sticky='nsew',padx=(8,6))
+        task_slot=ttk.Frame(top,style='Surface.TFrame')
+        task_slot.pack(side='left')
+        self.scan_button=ttk.Button(task_slot,text=tr('분석 시작'),style='Primary.TButton',command=self.start)
+        self.scan_button.grid(row=0,column=0,sticky='nsew')
+        self.cancel_button=ttk.Button(task_slot,text=tr('취소'),command=self.cancel,style='Tertiary.TButton')
+        self.cancel_button.grid(row=0,column=0,sticky='nsew')
+        self.tools_button,self.tools_menu,self.tool_items=make_tools_menu(top, (
+            (('preferences','설정…',self.preferences), ('sdk','SDK 설정…',self.choose_sdk)),
+            (('result','최근 결과 열기',self.open_result), ('folder','결과 폴더 열기',self.open_result_folder)),
+            (('path','파일 경로 복사',self.copy_source_path),),
+            (('exclusions','제외 초기화',self.reset_exclusions),
+             ('defaults','기준 초기화',self.reset_analysis_defaults), ('help','감지 도움말',self.settings)),
+        ))
         self.tools_button.pack(side='left',padx=(4,0))
-        self.tools_menu=tk.Menu(self.tools_button,tearoff=False)
-        self.tools_button.configure(menu=self.tools_menu)
-        self.tool_items={}
-        for key,label,command in (
-            ('preferences','설정…',self.preferences),
-            ('sdk','SDK 설정…',self.choose_sdk),
-            ('result','최근 결과 열기',self.open_result),('folder','결과 폴더 열기',self.open_result_folder),
-            ('path','파일 경로 복사',self.copy_source_path),
-            ('exclusions','제외 초기화',self.reset_exclusions),
-            ('defaults','기준 초기화',self.reset_analysis_defaults),('help','감지 도움말',self.settings)):
-            if key in ('path','exclusions'):self.tools_menu.add_separator()
-            self.tools_menu.add_command(label=tr(label),command=command)
-            self.tool_items[key]=self.tools_menu.index('end')
 
         settings_card=ttk.Frame(body);settings_card.pack(fill='x',pady=(8,8))
         self.settings_card=settings_card
@@ -191,9 +203,19 @@ class App:
         self.save_summary_label=ttk.Label(bottom,textvariable=self.save_summary,style='Surface.TLabel')
         self.save_summary_label.pack(side='left',fill='x',expand=True)
         self.render_button=ttk.Button(bottom,text=tr('보정 영상 저장'),style='Primary.TButton',command=self.render);self.render_button.pack(side='right')
-        self.quality=tk.StringVar(value='HIGH')
-        self.quality_box=ttk.Combobox(bottom,textvariable=self.quality,values=['HIGH','MEDIUM','LOW'],width=8,state='readonly');self.quality_box.pack(side='right',padx=(7,12))
-        ttk.Label(bottom,text=tr('품질'),style='Muted.TLabel').pack(side='right')
+        self.preview_button=ttk.Button(bottom,text=tr('미리보기 렌더'),style='Primary.TButton',command=self.render_preview)
+        self.preview_button.pack(side='right',padx=(6,6))
+        quality_control, self.quality_box = make_render_quality_control(
+            bottom, lambda: self.render_quality, self._refresh_render_quality)
+        quality_control.pack(side='right')
+        self.preview_switch=ttk.Frame(bottom,style='Surface.TFrame')
+        self.preview_after=tk.BooleanVar(root,False)
+        self.before_button=ttk.Radiobutton(self.preview_switch,text=tr('보정 전'),variable=self.preview_after,
+                                          value=False,command=self._preview_changed)
+        self.after_button=ttk.Radiobutton(self.preview_switch,text=tr('보정 후'),variable=self.preview_after,
+                                         value=True,command=self._preview_changed)
+        self.before_button.pack(side='left')
+        self.after_button.pack(side='left',padx=(5,0))
         self.status=DisplayVar(value='')
         self.sdk_status=DisplayVar(value='NVIDIA SDK 확인 중…')
         self.status_host=ttk.Frame(footer,style='Surface.TFrame',height=22);self.status_host.pack(fill='x',pady=(3,0));self.status_host.pack_propagate(False)
@@ -225,30 +247,16 @@ class App:
         self.graph.bind('<Button-4>',self.graph_wheel);self.graph.bind('<Button-5>',self.graph_wheel)
         self.graph.bind('<Button-2>',self.graph_pan_start);self.graph.bind('<B2-Motion>',self.graph_pan_drag)
         self.graph.bind('<ButtonRelease-2>',lambda e:setattr(self,'graph_panning',False))
-        graph_navigation=ttk.Frame(review,style='Surface.TFrame')
-        graph_navigation.pack(fill='x',pady=(0,2))
         self.graph_range=tk.StringVar(value='—')
-        ttk.Label(graph_navigation,textvariable=self.graph_range,style='Muted.TLabel',width=13,font=('맑은 고딕',9)).pack(side='left')
-        self.graph_fit_button=ttk.Button(graph_navigation,text=tr('전체'),width=4,style='Compact.TButton',command=self.graph_fit)
-        self.graph_fit_button.pack(side='right',padx=(3,0))
-        self.graph_zoom_in_button=ttk.Button(graph_navigation,text=tr('+'),width=2,style='Compact.TButton',command=lambda:self.graph_zoom(1.5))
-        self.graph_zoom_in_button.pack(side='right',padx=(3,0))
-        self.graph_zoom_out_button=ttk.Button(graph_navigation,text=tr('−'),width=2,style='Compact.TButton',command=lambda:self.graph_zoom(1/1.5))
-        self.graph_zoom_out_button.pack(side='right',padx=(4,0))
-        self.graph_scrollbar=ttk.Scrollbar(graph_navigation,orient='horizontal',style='Graph.Horizontal.TScrollbar',command=self.graph_scroll,takefocus=True)
-        self.graph_scrollbar.pack(side='left',fill='x',expand=True)
-        graph_vertical=ttk.Frame(review,style='Surface.TFrame')
-        graph_vertical.pack(fill='x',pady=(2,4))
-        ttk.Label(graph_vertical,text=tr('세로 최대'),style='Muted.TLabel').pack(side='left',padx=(0,6))
         self.graph_y_var=tk.StringVar(value='1');self.graph_y_display='1'
-        self.graph_y_entry=ttk.Spinbox(graph_vertical,textvariable=self.graph_y_var,from_=1e-6,to=1e9,
-            increment=5,width=7,command=self.graph_y_apply)
-        self.graph_y_entry.pack(side='left')
-        self.graph_y_entry.bind('<Return>',self.graph_y_apply)
-        self.graph_y_entry.bind('<FocusOut>',self.graph_y_apply)
-        ttk.Label(graph_vertical,text='%',style='Muted.TLabel').pack(side='left',padx=(4,8))
-        self.graph_y_auto_button=ttk.Button(graph_vertical,text=tr('자동'),width=4,style='Compact.TButton',command=self.graph_y_auto)
-        self.graph_y_auto_button.pack(side='left')
+        graph_controls = GraphControls(review, frame_range=self.graph_range, y_value=self.graph_y_var,
+            zoom=self.graph_zoom, fit=self.graph_fit, scroll=self.graph_scroll, apply_y=self.graph_y_apply,
+            auto_y=self.graph_y_auto, unit='%', min_y=1e-6, max_y=1e9, increment=5)
+        graph_controls.pack(fill='x')
+        self.graph_scrollbar = graph_controls.scrollbar
+        self.graph_zoom_in_button, self.graph_zoom_out_button = graph_controls.zoom_in, graph_controls.zoom_out
+        self.graph_fit_button, self.graph_y_auto_button = graph_controls.fit_button, graph_controls.auto_button
+        self.graph_y_entry = graph_controls.y_entry
         attach_tooltip(self.graph_y_entry,'세로축 표시 범위 · Ctrl+휠로 확대·축소')
         self.graph_hint=DisplayVar();self.update_graph_hint()
         self.graph_hint_label=CategoryLabel(review,textvariable=self.graph_hint,foreground=PALETTE['muted'],font=('맑은 고딕',9));self.graph_hint_label.pack(fill='x',pady=(0,6))
@@ -284,7 +292,7 @@ class App:
         for event in ('<Configure>','<<TreeviewSelect>>','<B1-Motion>','<ButtonRelease-1>'):self.table.bind(event,self.schedule_kind_overlays,add='+')
 
         attach_tooltip(self.path_entry,lambda:self.path.get() or '검토할 영상을 선택하세요.')
-        attach_tooltip(self.open_button,'영상 선택 · Ctrl+O');attach_tooltip(self.scan_button,'모션 분석 시작 · Ctrl+Enter')
+        attach_tooltip(self.open_button,'분석 영상 선택 · Ctrl+O');attach_tooltip(self.scan_button,'모션 분석 시작 · Ctrl+Enter')
         attach_tooltip(self.threshold_entry,'같은 점의 앞뒤 이동량보다 모두 이 비율 이상 빨라야 점프 후보입니다.')
         attach_tooltip(self.quiet_entry,'홀드로 판단할 정지 허용 이동량입니다. 원본 픽셀 기준이며 기본값은 0.5px입니다.')
         attach_tooltip(self.min_move_entry,lambda:f'점프 평가에 사용할 최소 이동량(원본 px). 새 영상·분석 폭 선택 시 기본값 {self.min_move_default:g}px. 직접 입력값은 그대로 사용합니다.')
@@ -300,10 +308,11 @@ class App:
         self.path.trace_add('write',self.invalidate);root.after(80,self.pump);root.after(150,self.check_sdk)
         for var in (self.quiet_var,self.support_var,self.min_points_var):var.trace_add('write',self.schedule_options)
         self.min_move_var.trace_add('write',self.minimum_motion_edited)
-        root.bind('<Control-o>',lambda e:self.shortcut(self.choose));root.bind('<Control-Return>',lambda e:self.shortcut(self.start))
+        root.bind('<Control-o>',lambda e:self.shortcut(self.reference_panel.choose if self.active_mode == 'reference' else self.choose))
+        root.bind('<Control-Return>',lambda e:self.shortcut(self.reference_panel.start if self.active_mode == 'reference' else self.start))
         self.playback_key_tag='WorkspacePlayback_'+str(id(self))
         root.bind_class(self.playback_key_tag,'<space>',self.playback_shortcut)
-        self.focus_order=[self.test_selector,self.path_entry,self.open_button,self.scan_button,self.cancel_button,self.tools_button,
+        self.focus_order=[self.mode_tabs,self.test_selector,self.path_entry,self.open_button,self.scan_button,self.cancel_button,self.tools_button,
             self.res_box,self.hold_check,self.quiet_entry,
             self.jump_check,self.threshold_entry,self.min_move_entry,self.support_entry,self.min_points_entry,
             self.player.screen,self.player.timeline,self.player.speed_box,self.player.loop_check,self.player.vector_check,
@@ -311,11 +320,13 @@ class App:
             self.add_range_button,self.previous_candidate_button,self.next_candidate_button,
             self.graph_scrollbar,self.graph_zoom_out_button,self.graph_zoom_in_button,self.graph_fit_button,
             self.graph_y_entry,self.graph_y_auto_button,
-            self.table,self.toggle_button,self.delete_range_button,self.quality_box,self.render_button]
+            self.table,self.toggle_button,self.delete_range_button,self.before_button,self.after_button,
+            self.quality_box,self.preview_button,self.render_button]
         root.bind_class(self.playback_key_tag,'<Tab>',lambda e:self.move_focus(e,1))
         root.bind_class(self.playback_key_tag,'<Shift-Tab>',lambda e:self.move_focus(e,-1))
-        self.bind_playback_shortcut(root)
-        self.drop_targets=(source_card,top,self.path_entry,self.player.screen_host,self.player.screen)
+        self.bind_playback_shortcut(body)
+        self.mode_tabs.bind('<<NotebookTabChanged>>', self.mode_changed)
+        self.drop_targets=(source_card,top,input_row,self.path_entry,self.player.screen_host,self.player.screen)
         for target in self.drop_targets:
             target.drop_target_register(DND_FILES)
             target.dnd_bind('<<DropEnter>>',self.drop_action)
@@ -323,6 +334,29 @@ class App:
             target.dnd_bind('<<Drop>>',self.drop_video)
         root.protocol('WM_DELETE_WINDOW',self.close);self.update_buttons()
 
+
+    def mode_changed(self, event=None):
+        if self.closing:
+            return
+        target = 'reference' if self.mode_tabs.select() == str(self.reference_page) else 'motion'
+        if target == self.active_mode:
+            return
+        if self.busy or (self.reference_panel is not None and self.reference_panel.busy):
+            self.mode_tabs.select(self.motion_page if self.active_mode == 'motion' else self.reference_page)
+            return
+        if target == 'reference':
+            from reference_panel import ReferencePanel
+            self.player.pause()
+            if self.reference_panel is None:
+                self.reference_panel = ReferencePanel(
+                    self.reference_page, settings_command=self.preferences, sdk_command=self.choose_sdk,
+                    on_quality_change=self._refresh_render_quality)
+                self.reference_panel.pack(fill='both', expand=True)
+            self.reference_panel.on_show()
+        else:
+            self.reference_panel.on_hide()
+            self._refresh_render_quality()
+        self.active_mode = target
 
     def choose(self):
         if self.busy:return
@@ -443,7 +477,7 @@ class App:
         return True
 
     def schedule_kind_overlays(self,*_):
-        if self.kind_overlay_pending is None:
+        if not self.closing and self.kind_overlay_pending is None:
             self.kind_overlay_pending=self.root.after_idle(self.draw_kind_overlays)
 
     def forward_kind_event(self,event,sequence):
@@ -488,7 +522,9 @@ class App:
         if path and self.path.get()!=path:self.path.set(path)
 
     def invalidate(self,*_):
-        if self.busy:return
+        if self.busy:
+            if self._preview_input is not None:self.stop.set()
+            return
         self.close_manual_window()
         normalized=self.path.get().strip().strip('"').replace('\\','/').casefold()
         if normalized!=self.minimum_source_path or self.res.get()!=self.minimum_width_choice:
@@ -505,6 +541,7 @@ class App:
         self.media_generation+=1
         if self.media_after:self.root.after_cancel(self.media_after);self.media_after=None
         self.player.clear();self.playhead=1;self.last_selected_key=None
+        self._discard_preview()
         self.graph_view.reset();self.graph_panning=False;self.dragging=False;self.graph_y_max=None
         self.analysis=None;self.model=None;self.rows=[];self.excluded=manual_excluded
         self.update_minimum_motion()
@@ -541,17 +578,18 @@ class App:
         self.path_entry.configure(state='disabled' if self.busy else 'normal')
         analyzed=self.analysis is not None and not self.analysis.get('manual_only')
         self.scan_button.configure(text=tr('재분석' if analyzed else '분석 시작'),
-            style='TButton' if analyzed else 'Primary.TButton',
             state='normal' if not self.busy and self.path.get().strip().strip('"') else 'disabled')
-        self.open_button.configure(style='Primary.TButton' if not self.path.get().strip().strip('"') else 'TButton')
         if self.test_selector is not None:self.test_selector.configure(state='disabled' if self.busy else 'readonly')
-        for widget in (self.res_box,self.quality_box):widget.configure(state='disabled' if self.busy else 'readonly')
-        self.cancel_button.configure(state='normal' if self.busy else 'disabled')
-        if self.busy:self.cancel_button.pack(fill='both',expand=True)
-        else:self.cancel_button.pack_forget()
+        self.res_box.configure(state='disabled' if self.busy else 'readonly')
+        show_task_cancel(self.scan_button,self.cancel_button,self.busy,self.stop.is_set())
         valid=self.analysis is not None and not self.busy and self.options_valid and self.options_pending is None
         actions=motion.render_runs(self.rows)
-        self.render_button.configure(state='normal' if valid and self.sdk_ready and actions else 'disabled')
+        can_render=valid and self.sdk_ready and bool(actions)
+        self.render_button.configure(state='normal' if can_render else 'disabled')
+        self.preview_button.configure(state='normal' if can_render and self._preview is None else 'disabled')
+        self.quality_box.configure(state='disabled' if self.busy else 'readonly')
+        for button in (self.before_button,self.after_button):
+            button.configure(state='disabled' if self.busy else 'normal')
         for widget in (self.previous_candidate_button,self.next_candidate_button):
             widget.configure(state='normal' if self.rows and not self.busy else 'disabled')
         selection=self.table.selection()
@@ -607,7 +645,7 @@ class App:
             if not math.isfinite(quiet) or quiet<0:raise ValueError()
             if not math.isfinite(support) or not 1<=support<=100:raise ValueError()
         except ValueError:
-            self.options_valid=False;self.update_buttons()
+            self.options_valid=False;self._discard_preview();self.update_buttons()
             self.status.set('홀드는 0 이상 px, 최소 이동은 0 초과 px, 추적점 비율은 1~100%, 최소 추적점은 1~10000 사이의 정수를 입력하세요.')
             return False
         changed=(quiet,minimum,support,min_points)!=(self.quiet_px,self.min_move,self.support_percent,self.min_points)
@@ -651,10 +689,17 @@ class App:
         self.pending=None
         if self.busy or self.model is None:return
         try:threshold=float(self.threshold.get());rows=motion.candidates(self.model,threshold,self.jumps.get(),excluded=self.excluded)
-        except ValueError:self.status.set('점프 기준에는 0 이상의 유한한 숫자를 입력하세요.');self.render_button.configure(state='disabled');return
+        except ValueError:
+            self.status.set('점프 기준에는 0 이상의 유한한 숫자를 입력하세요.')
+            self._discard_preview()
+            self.render_button.configure(state='disabled')
+            self.preview_button.configure(state='disabled')
+            return
         selection=self.table.selection();self.rows=rows;self.table.delete(*self.table.get_children())
         # Final grouping determines the actual reference pair shown in each row.
         actions=motion.render_runs(rows)
+        if self._preview is not None and self._preview_plan != self._render_spans(actions):
+            self._discard_preview()
         for r in rows:
             if r['kind']=='replace':
                 kind='추가';span=f'{r["targets"][0]}–{r["targets"][-1]}' if len(r['targets'])>1 else str(r['targets'][0])
@@ -864,21 +909,17 @@ class App:
             color='#98a5b4' if exc else PALETTE['primary'] if event and event['kind']=='replace' else '#827d9f' if predicted else '#d97b24' if actionable else '#1688b4' if m['occupied'] else '#4c86a8'
             yp=y1-min(ymax,m['score'])/ymax*(y1-y0)
             if event and event['key'] in selected:g.create_line(x,y0,x,y1,fill='#dbe9f5')
-            g.create_line(x,y1,x,yp,fill=color,width=2,dash=(3,3) if predicted else ())
             tags=(('jump_candidate',) if actionable else ())+(('prediction',f'prediction:{m["end"]}') if predicted else ())
-            g.create_oval(x-3,yp-3,x+3,yp+3,outline=color,fill='white' if exc or predicted else color,width=1.5,tags=tags)
+            draw_stem(g,x,y1,yp,color,hollow=exc or predicted,dashed=predicted,dot_tags=tags)
             if m['score']>ymax:g.create_text(x,y0-6,text=tr('↑'),fill=color)
         for frame in view.ticks(max(2,int((x1-x0)/65))):
             g.create_text(x_at(frame),y1+15,text=tr(str(frame)),fill=PALETTE['muted'],font=('맑은 고딕',8))
         self.draw_playhead()
 
     def draw_playhead(self):
-        self.graph.delete('playhead')
-        if not self.analysis or not self.graph_view.left<=self.playhead<=self.graph_view.right:return
         _,_,x0,x1,y0,y1,_,_=self.graph_geometry()
-        x=x0+self.graph_view.position(self.playhead)*(x1-x0)
-        self.graph.create_line(x,y0,x,y1,fill='#24354a',dash=(3,3),tags='playhead')
-        self.graph.create_text(x,y0+1,text=tr('▼'),fill='#24354a',anchor='n',tags='playhead')
+        visible = self.analysis and self.graph_view.left <= self.playhead <= self.graph_view.right
+        paint_playhead(self.graph, x0+self.graph_view.position(self.playhead)*(x1-x0) if visible else None, y0, y1)
 
     def player_frame(self,frame):
         self.playhead=frame
@@ -1042,15 +1083,83 @@ class App:
             except Exception as e:self.events.put(('error',str(e)))
         threading.Thread(target=worker,daemon=True).start()
 
-    def render(self,output=None):
-        if self.busy or not self.analysis or not self.sdk_ready:return
-        if not self.apply_analysis_options():return
+    def _current_render_runs(self):
+        if self.busy or not self.analysis or not self.sdk_ready:return []
+        self._refresh_render_quality()
+        if not self.apply_analysis_options():return []
         try:
             threshold=float(self.threshold.get())
-            if not math.isfinite(threshold) or threshold<0:return
-        except ValueError:return
+            if not math.isfinite(threshold) or threshold<0:return []
+        except ValueError:return []
         self.refresh()
-        runs=motion.render_runs(self.rows)
+        return motion.render_runs(self.rows)
+
+    @staticmethod
+    def _render_spans(runs):
+        return tuple((run['start'],run['end']) for run in runs)
+
+    def _preview_changed(self):
+        if self._preview is not None and self.player.is_open():
+            self.player.set_preview_path(self._preview.path if self.preview_after.get() else None)
+
+    def _discard_preview(self):
+        if self._preview is None:return
+        self.preview_after.set(False)
+        self._preview_changed()
+        self._preview.close()
+        self._preview=None
+        self._preview_plan=()
+        self.preview_switch.pack_forget()
+
+    def render_preview(self):
+        from motion_preview import render_motion_preview
+        runs=self._current_render_runs()
+        if not runs or self._preview is not None:return
+        analysis=self.analysis
+        quality=self.render_quality
+        plan=self._render_spans(runs)
+        self._preview_input=(self.path.get(),self.res.get())
+        self.close_manual_window()
+        cancel=self.stop=threading.Event()
+        self.busy=True;self.bar['value']=0;self.update_buttons()
+        self.status.set('보정 미리보기 렌더 중…')
+
+        def worker():
+            try:
+                artifact=render_motion_preview(analysis,runs,quality=quality,cancel=cancel,
+                    progress=lambda frame,total:self.events.put(('progress',frame,total)))
+            except Exception as exc:
+                self.events.put(('preview_done',None,plan,exc))
+            else:
+                self.events.put(('preview_done',artifact,plan,None))
+        threading.Thread(target=worker,daemon=True).start()
+
+    def _finish_preview(self,artifact,plan,error):
+        changed=self._preview_input != (self.path.get(),self.res.get())
+        self.busy=False
+        self._preview_input=None
+        if self.closing:
+            if artifact is not None:artifact.close()
+            return
+        if changed or self.stop.is_set() or isinstance(error,core.Cancelled):
+            if artifact is not None:artifact.close()
+            if changed:self.invalidate()
+            else:self.status.set('취소됐습니다.')
+        elif error is not None:
+            self.status.set(str(error))
+            messagebox.showerror(tr('작업 실패'),str(error))
+        else:
+            self._preview=artifact
+            self._preview_plan=plan
+            self.preview_after.set(True)
+            self.preview_switch.pack(side='right',padx=(0,8))
+            self._preview_changed()
+            self.bar['value']=100
+            self.status.set('미리보기 준비 완료')
+        self.update_buttons()
+
+    def render(self,output=None):
+        runs=self._current_render_runs()
         if not runs:return
         if output is None:
             source=Path(self.analysis['path']);extension=source.suffix or '.mov'
@@ -1060,7 +1169,9 @@ class App:
         if not output:return
         try:validate_output_paths(self.analysis['path'],output)
         except (ValueError,OSError) as e:messagebox.showerror(tr('저장 경로'),tr(str(e)));return
-        a=self.analysis;quality=self.quality.get();manual_ranges=[dict(r) for r in self.manual_ranges]
+        a=self.analysis
+        quality=self.render_quality
+        manual_ranges=[dict(r) for r in self.manual_ranges]
         plan=[{k:v for k,v in r.items() if k!='stats'} for r in self.rows]
         analysis_options=dict(self.min_move_settings,quiet_px=self.quiet_px,hold_min_move=self.model.get('hold_min_move',1.),
                               support_percent=self.support_percent,min_points=self.min_points)
@@ -1073,7 +1184,7 @@ class App:
             try:
                 result=sdk_bridge.repair(a,runs,output,quality,lambda f,n:self.events.put(('progress',f,n)),self.stop)
                 report=dict(source=a['path'],output=result,threshold=float(self.threshold_value),holds=self.hold_value,jumps=self.jump_value,
-                    mode='fixed_frame_replacement',source_frames=a['frames'],source_fps=a['metadata']['fps'],
+                    mode='fixed_frame_replacement',quality=quality,source_frames=a['frames'],source_fps=a['metadata']['fps'],
                     replacement_frames=replaced,repair_runs=runs,candidates=plan,manual_ranges=manual_ranges,analysis_options=analysis_options,
                     audio='copied unchanged; source frame count and fps preserved')
                 try:write_report(str(output)+'.analysis.json',report,protected_paths=[a['path'],output])
@@ -1090,7 +1201,11 @@ class App:
         self.preferences_window=show_app_settings(self.root,self.change_language,self.choose_sdk)
 
     def change_language(self,value):
-        try:set_language(value,self.root)
+        try:
+            set_language(value,self.root)
+            show_task_cancel(self.scan_button,self.cancel_button,self.busy,self.stop.is_set())
+            if self.reference_panel is not None:
+                self.reference_panel.refresh_language()
         except OSError as error:
             messagebox.showerror(tr('설정'),str(error),parent=self.root)
 
@@ -1101,9 +1216,29 @@ class App:
         self.sdk_window=show_sdk_settings(self.root,self.sdk_applied)
 
     def sdk_applied(self,path,result):
-        # A startup check may finish after the user validates a new environment.
-        self.sdk_check_generation+=1
-        self.sdk_ready=True;self.sdk_status.set(result['gpu']);self.update_buttons()
+        self._refresh_render_quality()
+        if result is not None:
+            # A startup check may finish after the user validates a new environment.
+            self.sdk_check_generation+=1
+            self.sdk_ready=True
+            self.sdk_status.set(result['gpu'])
+            self.update_buttons()
+
+    def _refresh_render_quality(self,quality=None):
+        if quality is None:
+            quality=sdk_bridge.configured_quality()
+        self.quality_box.set(quality)
+        if quality != self.render_quality:
+            self.render_quality=quality
+            if self._preview_input is not None:
+                self.stop.set()
+            if self._preview is not None:
+                self._discard_preview()
+                if not self.busy:
+                    self.status.set('품질이 변경되었습니다. 미리보기를 다시 렌더하세요.')
+            self.update_buttons()
+        if self.reference_panel is not None:
+            self.reference_panel.set_render_quality(quality)
 
     def check_sdk(self):
         self.sdk_check_generation+=1;generation=self.sdk_check_generation
@@ -1114,7 +1249,11 @@ class App:
             except Exception as e:self.events.put(('sdk_error',generation,str(e)))
         threading.Thread(target=worker,daemon=True).start()
 
-    def cancel(self):self.stop.set();self.status.set('취소 중…')
+    def cancel(self):
+        if self.busy and not self.stop.is_set():
+            self.stop.set()
+            self.status.set('취소 중…')
+            self.update_buttons()
 
     def pump(self):
         try:
@@ -1142,24 +1281,48 @@ class App:
                 elif kind=='sdk_error':
                     if ev[1]==self.sdk_check_generation:
                         self.sdk_ready=False;self.sdk_status.set('SDK 환경 확인 필요');self.update_buttons()
+                elif kind=='preview_done':
+                    self._finish_preview(*ev[1:])
                 elif kind=='render_done':
                     self.busy=False;self.bar['value']=100;r=ev[1];self.last_output=r['output'];self.update_buttons()
                     self.status.set(f'저장 완료 · 원본 {r["frames"]}프레임·FPS 유지 · '+r['output']+
                                     (' · 분석 내역 저장 실패: '+r['report_error'] if r.get('report_error') else ''))
         except queue.Empty:pass
-        if self.closing and not self.busy:self.root.destroy();return
+        reference_busy = self.reference_panel is not None and self.reference_panel.busy
+        if self.closing and not self.busy and not reference_busy:
+            self.finish_close()
+            return
+        other = self.reference_page if self.active_mode == 'motion' else self.motion_page
+        state = 'disabled' if self.busy or reference_busy else 'normal'
+        if self.mode_tabs.tab(other, 'state') != state:
+            self.mode_tabs.tab(other, state=state)
         self.root.after(80,self.pump)
 
     def close(self):
         self.close_manual_window()
         if self.media_after:self.root.after_cancel(self.media_after);self.media_after=None
         if self.player and self.player.is_open():self.player.close()
+        self._discard_preview()
         self.closing=True;self.stop.set()
-        if not self.busy:self.root.destroy()
+        if self.reference_panel is not None:
+            self.reference_panel.cancel()
+        if not self.busy and not (self.reference_panel is not None and self.reference_panel.busy):
+            self.finish_close()
+
+    def finish_close(self):
+        if self.kind_overlay_pending is not None:
+            self.root.after_cancel(self.kind_overlay_pending)
+            self.kind_overlay_pending=None
+        if self.reference_panel is not None:
+            self.reference_panel.close()
+        self.root.destroy()
 
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('video',nargs='?');p.add_argument('--analyze');p.add_argument('--report')
+    p.add_argument('--video-edit', action='store_true', help='Open the two-input Video Edit tab.')
+    p.add_argument('--source', help='Original reference clip for the Video Edit tab.')
+    p.add_argument('--change', help='Edited clip for the Video Edit tab.')
     p.add_argument('--jump-threshold',type=float,default=5)
     p.add_argument('--min-move',type=float,default=None,help='최소 기준 이동 원본 px (0 초과, 생략 시 분석 가로 × 0.005)')
     p.add_argument('--support-percent',type=float,default=30.,help='유효 추적점 비율 1~100%% (기본 30%%)')
@@ -1209,6 +1372,10 @@ def main():
         return code
     root=tk.Tk();app=App(root)
     if args.video:app.path.set(args.video)
+    if args.video_edit or args.source or args.change:
+        app.mode_tabs.select(app.reference_page)
+        app.mode_changed()
+        app.reference_panel.set_inputs(source=args.source, change=args.change)
     app.support_var.set(f'{args.support_percent:g}')
     app.min_points_var.set(str(args.min_points))
     if args.min_move is not None:app.min_move_var.set(f'{args.min_move:g}')

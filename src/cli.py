@@ -17,7 +17,7 @@ import sdk_bridge
 import source_format
 
 
-VERSION = '1.0'
+VERSION = '1.1'
 
 
 class UsageError(ValueError):
@@ -75,6 +75,13 @@ def excluded_key(value):
     return f'{kind}:{left}:{right}'
 
 
+def match_anchor(value):
+    pair = re.fullmatch(r'([1-9]\d*):([1-9]\d*)', value)
+    if not pair:
+        raise argparse.ArgumentTypeError('use SOURCE:CHANGE with two positive, 1-based frame numbers')
+    return tuple(map(int, pair.groups()))
+
+
 def parser():
     result = Parser(prog='FrameHoldFinder-CLI',
                     description='Detect motion holds and jumps, then replace selected frames without changing clip length.')
@@ -103,6 +110,15 @@ def parser():
             sub.add_argument('--format', choices=('source', 'prores'), default='source', help='Preserve supported source encoding format (default), or explicitly encode ProRes MOV.')
             sub.add_argument('--quality', choices=('LOW', 'MEDIUM', 'HIGH'), default='HIGH', help='NVIDIA interpolation quality (default: HIGH).')
             sub.add_argument('--dry-run', action='store_true', help='Return the repair plan without invoking the SDK or writing a video.')
+    match = commands.add_parser('match', help='Match the edited clip to the original timeline (Video Edit mode).')
+    match.add_argument('source', help='Original reference video; sets output frame count, FPS and audio.')
+    match.add_argument('change', help='Edited video; provides output pictures and video format.')
+    match.add_argument('--anchor', action='append', type=match_anchor, default=[], metavar='SOURCE:CHANGE',
+                       help='Pin a corresponding original and edited frame. Repeat for additional ordered pairs.')
+    match.add_argument('-o', '--output', help='Also render matched footage using the edited clip container.')
+    match.add_argument('--report', metavar='JSON', help='Save the 1-based frame correspondence as JSON.')
+    match.add_argument('--quality', choices=('LOW', 'MEDIUM', 'HIGH'), default='HIGH')
+    match.add_argument('--quiet', action='store_true', help='Suppress progress on stderr.')
     sdk = commands.add_parser('sdk-check', help='Check the configured NVIDIA SDK Python environment.')
     sdk.add_argument('--python', metavar='EXE', help='Check this SDK Python executable instead of the saved one.')
     sdk.add_argument('--save', action='store_true', help='Save --python for both desktop and CLI after a successful check.')
@@ -242,7 +258,43 @@ def plan(args, source, cancel):
     return analysis, runs, result
 
 
+def match_clips(args, cancel):
+    from reference_match import analyze_reference
+    from reference_render import render_reference
+
+    source = Path(args.source).expanduser().resolve()
+    change = Path(args.change).expanduser().resolve()
+    for path in (source, change):
+        if not path.is_file():
+            raise ValueError(f'Video does not exist: {path}')
+    output = Path(args.output).expanduser().resolve() if args.output else None
+    if output is not None:
+        if same_path(output, source) or same_path(output, change):
+            raise ValueError('Output cannot overwrite either input video.')
+        if output.is_dir() or not output.parent.is_dir() or output.suffix.lower() != change.suffix.lower():
+            raise ValueError(f'Choose an output file with the edited clip extension ({change.suffix}) in an existing folder.')
+    if args.report:
+        report = validate_report_path(args.report, [source, change, output])
+        if not report.parent.is_dir():
+            raise ValueError(f'Report directory does not exist: {report.parent}')
+
+    progress = Progress('match', args.quiet)
+    analysis = analyze_reference(source, change, anchors=args.anchor, cancel=cancel,
+                                 progress=lambda value: progress(round(value * 100), 100))
+    result = dict(analysis, command='match', version=VERSION, status='analyzed')
+    if output is not None:
+        progress = Progress('render', args.quiet)
+        result['render'] = render_reference(analysis, output, cancel=cancel, quality=args.quality,
+                                            progress=lambda value: progress(round(value * 100), 100))
+        result['status'] = 'rendered'
+    if args.report:
+        write_report(report, result, protected_paths=[source, change, output])
+    return result
+
+
 def execute(args, cancel):
+    if args.command == 'match':
+        return match_clips(args, cancel)
     if args.command == 'sdk-check':
         if args.save and not args.python:
             raise UsageError('--save requires --python EXE')

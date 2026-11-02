@@ -6,6 +6,7 @@ The application source is MIT licensed. Bundled dependencies keep their own lice
 
 | Component / 구성요소 | Use / 용도 | Upstream / 출처 |
 | --- | --- | --- |
+| FrameMatch for Nuke | Source/Change temporal matcher and gap endpoint rules / 원본·편집본 프레임 대응 및 보간 구간 판정 (MIT, © 2026 tardis7732) | [Upstream revision](https://github.com/tardis7732/FrameMatch-for-Nuke/tree/b3fcfffbfcce34661e6fa8898ed1ff2899547fb6), [MIT notice](LICENSE) |
 | Python 3.11 + Tcl/Tk | Runtime and desktop UI / 런타임·UI | [Python](https://www.python.org/), [Tcl/Tk](https://www.tcl.tk/) |
 | NumPy 2.4.6 | Motion data / 모션 데이터 | [NumPy](https://numpy.org/) |
 | OpenCV headless 5.0.0.93 | Sparse LK optical flow / 추적점 모션 분석 | [OpenCV](https://opencv.org/) |
